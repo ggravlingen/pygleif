@@ -58,6 +58,7 @@ def test_gleif_entity():
     assert data.entity.business_register_entity_id == "NO001"
     assert data.entity.legal_jurisdiction == "NO"
     assert data.entity.legal_form == "AKSJESELSKAP"
+    assert data.entity.legal_name == "Nordic Credit Rating AS"
     assert data.entity.entity_status == "ACTIVE"
 
 
