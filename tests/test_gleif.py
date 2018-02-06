@@ -35,4 +35,42 @@ LEI_DATA = '''[{
 def test_gleif():
     data = GLEIF('549300MLUDYVRQOOXS22')
 
-    assert data.entity.business_register_entity_id == 'NO001'
+    assert data.lei == '549300MLUDYVRQOOXS22'
+
+
+def test_gleif_entity():
+    data = GLEIF('549300MLUDYVRQOOXS22')
+
+    assert data.entity.business_register_entity_id == "NO001"
+
+    assert data.entity.legal_address.line1 == "Haakon VII's gate 1"
+    assert data.entity.legal_address.city == "Oslo"
+    assert data.entity.legal_address.region == "NO-03"
+    assert data.entity.legal_address.country == "NO"
+    assert data.entity.legal_address.postal_code == "0161"
+
+    assert data.entity.headquarters_address.line1 == "Haakon VII's gate 1"
+    assert data.entity.headquarters_address.city == "Oslo"
+    assert data.entity.headquarters_address.region == "NO-03"
+    assert data.entity.headquarters_address.country == "NO"
+    assert data.entity.headquarters_address.postal_code == "0161"
+
+    assert data.entity.business_register_entity_id == "NO001"
+    assert data.entity.legal_jurisdiction == "NO"
+    assert data.entity.legal_form == "AKSJESELSKAP"
+    assert data.entity.legal_name == "Nordic Credit Rating AS"
+    assert data.entity.entity_status == "ACTIVE"
+
+
+def test_gleif_registration():
+    data = GLEIF('549300MLUDYVRQOOXS22')
+
+    assert data.registration.initial_registration_date\
+        == "2017-04-29T02:02:39.295Z"
+    assert data.registration.last_update_date\
+        == "2017-04-29T02:02:39.274Z"
+    assert data.registration.registration_status == "ISSUED"
+    assert data.registration.next_renewal_date\
+        == "2018-04-27T06:32:56.863Z"
+    assert data.registration.managing_lou == "EVK05KS7XY1DEII3R011"
+    assert data.registration.validation_sources == "FULLY_CORROBORATED"

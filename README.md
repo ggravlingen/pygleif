@@ -1,0 +1,1 @@
+[![Coverage Status](https://coveralls.io/repos/github/ggravlingen/pygleif/badge.svg?branch=add_tests)](https://coveralls.io/github/ggravlingen/pygleif?branch=add_tests)
