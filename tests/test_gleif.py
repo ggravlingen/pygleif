@@ -21,24 +21,12 @@ LEI_DATA = '''[{
       "EntityStatus": {"$": "ACTIVE"}
     },
     "Registration": {
-      "InitialRegistrationDate": {
-        "$": "2017-04-29T02:02:39.295Z"
-      },
-      "LastUpdateDate": {
-        "$": "2017-04-29T02:02:39.274Z"
-      },
-      "RegistrationStatus": {
-        "$": "ISSUED"
-      },
-      "NextRenewalDate": {
-        "$": "2018-04-27T06:32:56.863Z"
-      },
-      "ManagingLOU": {
-        "$": "EVK05KS7XY1DEII3R011"
-      },
-      "ValidationSources": {
-        "$": "FULLY_CORROBORATED"
-      }
+      "InitialRegistrationDate": {"$": "2017-04-29T02:02:39.295Z"},
+      "LastUpdateDate": {"$": "2017-04-29T02:02:39.274Z"},
+      "RegistrationStatus": {"$": "ISSUED"},
+      "NextRenewalDate": {"$": "2018-04-27T06:32:56.863Z"},
+      "ManagingLOU": {"$": "EVK05KS7XY1DEII3R011"},
+      "ValidationSources": {"$": "FULLY_CORROBORATED"}
     }
   }
 ]'''
