@@ -37,6 +37,7 @@ def test_gleif():
 
     assert data.lei == '549300MLUDYVRQOOXS22'
 
+
 def test_gleif_entity():
     data = GLEIF('549300MLUDYVRQOOXS22')
 
@@ -59,15 +60,16 @@ def test_gleif_entity():
     assert data.entity.legal_form == "AKSJESELSKAP"
     assert data.entity.entity_status == "ACTIVE"
 
+
 def test_gleif_registration():
     data = GLEIF('549300MLUDYVRQOOXS22')
 
     assert data.registration.initial_registration_date\
-           == "2017-04-29T02:02:39.295Z"
+        == "2017-04-29T02:02:39.295Z"
     assert data.registration.last_update_date\
-           == "2017-04-29T02:02:39.274Z"
+        == "2017-04-29T02:02:39.274Z"
     assert data.registration.registration_status == "ISSUED"
     assert data.registration.next_renewal_date\
-           == "2018-04-27T06:32:56.863Z"
+        == "2018-04-27T06:32:56.863Z"
     assert data.registration.managing_lou == "EVK05KS7XY1DEII3R011"
     assert data.registration.validation_sources == "FULLY_CORROBORATED"
