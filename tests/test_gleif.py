@@ -1,4 +1,4 @@
-from pygleif.gleif import GLEIFEntity
+from pygleif.gleif import GLEIF
 
 LEI_DATA = '''[{
     "LEI": {"$": "549300MLUDYVRQOOXS22"},
@@ -45,6 +45,6 @@ LEI_DATA = '''[{
 
 
 def test_gleif():
-    data = GLEIFEntity(LEI_DATA['Entity'])
+    data = GLEIF('549300MLUDYVRQOOXS22')
 
-    assert data.business_register_entity_id == 'NO001'
+    assert data.entity.business_register_entity_id == 'NO001'
