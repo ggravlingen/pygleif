@@ -1,6 +1,7 @@
 import urllib.request
 import json
 
+
 class GLEIF:
     """Parse JSON from GLEIF registry. Supports v1 of API."""
 
@@ -9,16 +10,18 @@ class GLEIF:
 
     @property
     def raw(self):
-        r = urllib.request.urlopen('https://leilookup.gleif.org/api/v1/leirecords?lei='+self.lei_code)
+        r = urllib.request.urlopen(
+            'https://leilookup.gleif.org/api/v1/leirecords?lei=' +
+            self.lei_code)
         return json.loads(r.read().decode('UTF-8'))[0]
-
-    @property
-    def entity(self):
-        return GLEIFEntity(self)
 
     @property
     def lei(self):
         return self.lei_data['LEI']
+
+    @property
+    def entity(self):
+        return GLEIFEntity(self)
 
     @property
     def registration(self):
