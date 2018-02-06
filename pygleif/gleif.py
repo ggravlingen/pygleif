@@ -27,10 +27,6 @@ class GLEIF:
     def registration(self):
         return GLEIFRegistration(self)
 
-    @property
-    def entity_business_register_entity_id(self):
-        return self.entity['BusinessRegisterEntityID']
-
 
 class GLEIFRegistration:
 
