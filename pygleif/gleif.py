@@ -17,7 +17,7 @@ class GLEIF:
 
     @property
     def lei(self):
-        return self.lei_data['LEI']
+        return self.raw['LEI']['$']
 
     @property
     def entity(self):
@@ -39,7 +39,7 @@ class GLEIFRegistration:
 
     @property
     def raw(self):
-        return self._entity.raw['Registration']
+        return self._registration.raw['Registration']
 
     @property
     def initial_registration_date(self):
