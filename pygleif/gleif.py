@@ -1,5 +1,32 @@
+from .const import (
+    ATTR_ADDRESS_CITY,
+    ATTR_ADDRESS_COUNTRY,
+    ATTR_DOLLAR_SIGN,
+    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID,
+    ATTR_ENTITY_ENTITY_STATUS,
+    ATTR_ENTITY_LEGAL_FORM,
+    ATTR_ENTITY_LEGAL_JURISDICTION,
+    ATTR_ENTITY_LEGAL_NAME,
+    ATTR_ADDRESS_LINE1,
+    ATTR_ADDRESS_POSTAL_CODE,
+    ATTR_ADDRESS_REGION,
+    ATTR_ADDRESS_TYPE_HQ,
+    ATTR_ADDRESS_TYPE_LEGAL,
+    ATTR_ENTITY,
+    ATTR_INITIAL_REGISTRATION_DATE,
+    ATTR_LAST_UPDATE_DATE,
+    ATTR_MANAGING_LOU,
+    ATTR_NEXT_RENEWAL_DATE,
+    ATTR_LEI,
+    ATTR_REGISTER,
+    ATTR_REGISTRATION_STATUS,
+    ATTR_REGISTRATION,
+    ATTR_VALIDATION_SOURCES,
+    URL_API
+)
 import urllib.request
 import json
+from bs4 import BeautifulSoup
 
 
 class GLEIF:
@@ -10,14 +37,12 @@ class GLEIF:
 
     @property
     def raw(self):
-        r = urllib.request.urlopen(
-            'https://leilookup.gleif.org/api/v1/leirecords?lei=' +
-            self.lei_code)
+        r = urllib.request.urlopen(URL_API+self.lei_code)
         return json.loads(r.read().decode('UTF-8'))[0]
 
     @property
     def lei(self):
-        return self.raw['LEI']['$']
+        return self.raw[ATTR_LEI][ATTR_DOLLAR_SIGN]
 
     @property
     def entity(self):
@@ -35,69 +60,68 @@ class GLEIFRegistration:
 
     @property
     def raw(self):
-        return self._registration.raw['Registration']
+        return self._registration.raw[ATTR_REGISTRATION]
 
     @property
     def initial_registration_date(self):
-        return self.raw['InitialRegistrationDate']['$']
+        return self.raw[ATTR_INITIAL_REGISTRATION_DATE][ATTR_DOLLAR_SIGN]
 
     @property
     def last_update_date(self):
-        return self.raw['LastUpdateDate']['$']
+        return self.raw[ATTR_LAST_UPDATE_DATE][ATTR_DOLLAR_SIGN]
 
     @property
     def managing_lou(self):
-        return self.raw['ManagingLOU']['$']
+        return self.raw[ATTR_MANAGING_LOU][ATTR_DOLLAR_SIGN]
 
     @property
     def next_renewal_date(self):
-        return self.raw['NextRenewalDate']['$']
+        return self.raw[ATTR_NEXT_RENEWAL_DATE][ATTR_DOLLAR_SIGN]
 
     @property
     def registration_status(self):
-        return self.raw['RegistrationStatus']['$']
+        return self.raw[ATTR_REGISTRATION_STATUS][ATTR_DOLLAR_SIGN]
 
     @property
     def validation_sources(self):
-        return self.raw['ValidationSources']['$']
+        return self.raw[ATTR_VALIDATION_SOURCES][ATTR_DOLLAR_SIGN]
 
 
 class GLEIFEntity:
-
     def __init__(self, entity):
         self._entity = entity
 
     @property
     def raw(self):
-        return self._entity.raw['Entity']
+        return self._entity.raw[ATTR_ENTITY]
 
     @property
     def business_register_entity_id(self):
-        return self.raw['BusinessRegisterEntityID']['@register']
+        return self.raw[ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
 
     @property
     def entity_status(self):
-        return self.raw['EntityStatus']['$']
+        return self.raw[ATTR_ENTITY_ENTITY_STATUS][ATTR_DOLLAR_SIGN]
 
     @property
     def legal_form(self):
-        return self.raw['LegalForm']['$']
+        return self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
 
     @property
     def legal_jurisdiction(self):
-        return self.raw['LegalJurisdiction']['$']
+        return self.raw[ATTR_ENTITY_LEGAL_JURISDICTION][ATTR_DOLLAR_SIGN]
 
     @property
     def legal_name(self):
-        return self.raw['LegalName']['$']
+        return self.raw[ATTR_ENTITY_LEGAL_NAME][ATTR_DOLLAR_SIGN]
 
     @property
     def headquarters_address(self):
-        return Address(self, 'HeadquartersAddress')
+        return Address(self, ATTR_ADDRESS_TYPE_HQ)
 
     @property
     def legal_address(self):
-        return Address(self, 'LegalAddress')
+        return Address(self, ATTR_ADDRESS_TYPE_LEGAL)
 
 
 class Address:
@@ -112,20 +136,30 @@ class Address:
 
     @property
     def city(self):
-        return self.raw['City']['$']
+        return self.raw[ATTR_ADDRESS_CITY][ATTR_DOLLAR_SIGN]
 
     @property
     def country(self):
-        return self.raw['Country']['$']
+        return self.raw[ATTR_ADDRESS_COUNTRY][ATTR_DOLLAR_SIGN]
 
     @property
     def line1(self):
-        return self.raw['Line1']['$']
+        return self.raw[ATTR_ADDRESS_LINE1][ATTR_DOLLAR_SIGN]
 
     @property
     def postal_code(self):
-        return self.raw['PostalCode']['$']
+        return self.raw[ATTR_ADDRESS_POSTAL_CODE][ATTR_DOLLAR_SIGN]
 
     @property
     def region(self):
-        return self.raw['Region']['$']
+        return self.raw[ATTR_ADDRESS_REGION][ATTR_DOLLAR_SIGN]
+
+
+class GLEIFParseRelationshipRecord:
+
+    def __init__(self, record_xml):
+        self.record_xml = record_xml
+
+    @property
+    def raw(self):
+        return BeautifulSoup(self.record_xml, 'xml')
