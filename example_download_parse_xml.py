@@ -1,4 +1,5 @@
 from pygleif.const import URL_LEVEL2_CONCAT_FILES
+from pygleif.gleif import GLEIFParseRelationshipRecord
 import arrow
 import wget
 from zipfile import ZipFile
@@ -26,6 +27,19 @@ if debug == 0:
         zip.extractall()
         os.remove(save_name)
 
-
 tree = ET.parse(extracted_file)
 root = tree.getroot()
+
+#for i in range(len(root[1])):
+for i in range(5):
+    xml_data = ET.tostring(root[1][i], encoding='utf8', method='xml')
+    data = GLEIFParseRelationshipRecord(xml_data)
+
+    relationship_type = data.raw.Relationship.RelationshipType.text
+    parent = data.raw.Relationship.StartNode.NodeID.text
+    child = data.raw.Relationship.EndNode.NodeID.text
+
+    print("Relationship type: " + relationship_type )
+    print("Parent: " + parent)
+    print("Child: " + child)
+    print("")
