@@ -2,4 +2,4 @@
 
 from .gleif import GLEIF
 
-__all__ = ['GLEIF']
+__all__ = ['GLEIF', 'GLEIFParseRelationshipRecord']

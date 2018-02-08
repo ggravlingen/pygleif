@@ -1,5 +1,6 @@
 import urllib.request
 import json
+from bs4 import BeautifulSoup
 
 
 class GLEIF:
@@ -129,3 +130,13 @@ class Address:
     @property
     def region(self):
         return self.raw['Region']['$']
+
+
+class GLEIFParseRelationshipRecord:
+
+    def __init__(self, record_xml):
+        self.record_xml = record_xml
+
+    @property
+    def raw(self):
+        return BeautifulSoup(self.record_xml, 'xml')
