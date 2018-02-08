@@ -30,7 +30,7 @@ if debug == 0:
 tree = ET.parse(extracted_file)
 root = tree.getroot()
 
-#for i in range(len(root[1])):
+#  for i in range(len(root[1])):
 for i in range(5):
     xml_data = ET.tostring(root[1][i], encoding='utf8', method='xml')
     data = GLEIFParseRelationshipRecord(xml_data)
@@ -39,7 +39,7 @@ for i in range(5):
     parent = data.raw.Relationship.StartNode.NodeID.text
     child = data.raw.Relationship.EndNode.NodeID.text
 
-    print("Relationship type: " + relationship_type )
+    print("Relationship type: " + relationship_type)
     print("Parent: " + parent)
     print("Child: " + child)
     print("")
