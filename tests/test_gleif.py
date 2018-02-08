@@ -130,4 +130,4 @@ def test_relationship_record():
     data = GLEIFParseRelationshipRecord(XML)
 
     assert data.raw.Relationship.StartNode.NodeID.text\
-           == '097900BEJX0000001852'
+        == '097900BEJX0000001852'
