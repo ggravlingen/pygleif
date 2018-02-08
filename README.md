@@ -1,4 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/github/ggravlingen/pygleif/badge.svg)](https://coveralls.io/github/ggravlingen/pygleif)
+[![PyPI version](https://badge.fury.io/py/pygleif.svg)](https://badge.fury.io/py/pygleif)
 
 This is a Python class that queries the API of GLEIF.org to return data about a specific entity (corporation.) It can also parse the XML-files provided by GLEIF.
 
