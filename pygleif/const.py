@@ -1,5 +1,6 @@
 URL_API = 'https://leilookup.gleif.org/api/v1/leirecords?lei='
-URL_LEVEL2_CONCAT_FILES = 'https://leidata.gleif.org/api/v1/concatenated-files/rr/%date%/zip'
+URL_LEVEL2_CONCAT_FILES\
+    = 'https://leidata.gleif.org/api/v1/concatenated-files/rr/%date%/zip'
 
 ATTR_DOLLAR_SIGN = '$'
 
