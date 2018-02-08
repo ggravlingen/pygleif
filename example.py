@@ -1,5 +1,4 @@
-from pygleif import GLEIF
-from pygleif.const import LEVEL2_URL
+from pygleif.const import URL_LEVEL2_CONCAT_FILES
 import arrow
 import wget
 from zipfile import ZipFile
@@ -8,9 +7,8 @@ import xml.etree.ElementTree as ET
 
 debug = 1
 
-
 today = arrow.now().format('YYYYMMDD')
-level_2_url = LEVEL2_URL.replace('%date%', today)
+level_2_url = URL_LEVEL2_CONCAT_FILES.replace('%date%', today)
 save_name = 'file'+today+'.zip'
 extracted_file = today+'-gleif-concatenated-file-rr.xml'
 
@@ -31,4 +29,3 @@ if debug == 0:
 
 tree = ET.parse(extracted_file)
 root = tree.getroot()
-
