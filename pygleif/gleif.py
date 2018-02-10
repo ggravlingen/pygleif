@@ -103,23 +103,29 @@ class GLEIFEntity:
 
     @property
     def business_register_entity_id(self):
-        return self.raw[ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
+        if ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID in self.raw:
+            return self.raw[
+                ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
 
     @property
     def entity_status(self):
-        return self.raw[ATTR_ENTITY_ENTITY_STATUS][ATTR_DOLLAR_SIGN]
+        if ATTR_ENTITY_ENTITY_STATUS in self.raw:
+            return self.raw[ATTR_ENTITY_ENTITY_STATUS][ATTR_DOLLAR_SIGN]
 
     @property
     def legal_form(self):
-        return self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+        if ATTR_ENTITY_LEGAL_FORM in self.raw:
+            return self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
 
     @property
     def legal_jurisdiction(self):
-        return self.raw[ATTR_ENTITY_LEGAL_JURISDICTION][ATTR_DOLLAR_SIGN]
+        if ATTR_ENTITY_LEGAL_JURISDICTION in self.raw:
+            return self.raw[ATTR_ENTITY_LEGAL_JURISDICTION][ATTR_DOLLAR_SIGN]
 
     @property
     def legal_name(self):
-        return self.raw[ATTR_ENTITY_LEGAL_NAME][ATTR_DOLLAR_SIGN]
+        if ATTR_ENTITY_LEGAL_NAME in self.raw:
+            return self.raw[ATTR_ENTITY_LEGAL_NAME][ATTR_DOLLAR_SIGN]
 
     @property
     def headquarters_address(self):
