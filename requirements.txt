@@ -2,4 +2,3 @@ arrow
 wget
 beautifulsoup4
 lxml
-dateutil
