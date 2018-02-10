@@ -27,6 +27,7 @@ from .const import (
 import urllib.request
 import json
 from bs4 import BeautifulSoup
+from dateutil import parser
 
 
 class GLEIF:
@@ -65,12 +66,14 @@ class GLEIFRegistration:
     @property
     def initial_registration_date(self):
         if ATTR_INITIAL_REGISTRATION_DATE in self.raw:
-            return self.raw[ATTR_INITIAL_REGISTRATION_DATE][ATTR_DOLLAR_SIGN]
+            return parser.parse(
+                self.raw[ATTR_INITIAL_REGISTRATION_DATE][ATTR_DOLLAR_SIGN])
 
     @property
     def last_update_date(self):
         if ATTR_LAST_UPDATE_DATE in self.raw:
-            return self.raw[ATTR_LAST_UPDATE_DATE][ATTR_DOLLAR_SIGN]
+            return parser.parse(
+                self.raw[ATTR_LAST_UPDATE_DATE][ATTR_DOLLAR_SIGN])
 
     @property
     def managing_lou(self):
@@ -80,7 +83,8 @@ class GLEIFRegistration:
     @property
     def next_renewal_date(self):
         if ATTR_NEXT_RENEWAL_DATE in self.raw:
-            return self.raw[ATTR_NEXT_RENEWAL_DATE][ATTR_DOLLAR_SIGN]
+            return parser.parse(
+                self.raw[ATTR_NEXT_RENEWAL_DATE][ATTR_DOLLAR_SIGN])
 
     @property
     def registration_status(self):
