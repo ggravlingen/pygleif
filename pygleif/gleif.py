@@ -64,27 +64,33 @@ class GLEIFRegistration:
 
     @property
     def initial_registration_date(self):
-        return self.raw[ATTR_INITIAL_REGISTRATION_DATE][ATTR_DOLLAR_SIGN]
+        if ATTR_INITIAL_REGISTRATION_DATE in self.raw:
+            return self.raw[ATTR_INITIAL_REGISTRATION_DATE][ATTR_DOLLAR_SIGN]
 
     @property
     def last_update_date(self):
-        return self.raw[ATTR_LAST_UPDATE_DATE][ATTR_DOLLAR_SIGN]
+        if ATTR_LAST_UPDATE_DATE in self.raw:
+            return self.raw[ATTR_LAST_UPDATE_DATE][ATTR_DOLLAR_SIGN]
 
     @property
     def managing_lou(self):
-        return self.raw[ATTR_MANAGING_LOU][ATTR_DOLLAR_SIGN]
+        if ATTR_MANAGING_LOU in self.raw:
+            return self.raw[ATTR_MANAGING_LOU][ATTR_DOLLAR_SIGN]
 
     @property
     def next_renewal_date(self):
-        return self.raw[ATTR_NEXT_RENEWAL_DATE][ATTR_DOLLAR_SIGN]
+        if ATTR_NEXT_RENEWAL_DATE in self.raw:
+            return self.raw[ATTR_NEXT_RENEWAL_DATE][ATTR_DOLLAR_SIGN]
 
     @property
     def registration_status(self):
-        return self.raw[ATTR_REGISTRATION_STATUS][ATTR_DOLLAR_SIGN]
+        if ATTR_REGISTRATION_STATUS in self.raw:
+            return self.raw[ATTR_REGISTRATION_STATUS][ATTR_DOLLAR_SIGN]
 
     @property
     def validation_sources(self):
-        return self.raw[ATTR_VALIDATION_SOURCES][ATTR_DOLLAR_SIGN]
+        if ATTR_VALIDATION_SOURCES in self.raw:
+            return self.raw[ATTR_VALIDATION_SOURCES][ATTR_DOLLAR_SIGN]
 
 
 class GLEIFEntity:
@@ -136,23 +142,28 @@ class Address:
 
     @property
     def city(self):
-        return self.raw[ATTR_ADDRESS_CITY][ATTR_DOLLAR_SIGN]
+        if ATTR_ADDRESS_CITY in self.raw:
+            return self.raw[ATTR_ADDRESS_CITY][ATTR_DOLLAR_SIGN]
 
     @property
     def country(self):
-        return self.raw[ATTR_ADDRESS_COUNTRY][ATTR_DOLLAR_SIGN]
+        if ATTR_ADDRESS_COUNTRY in self.raw:
+            return self.raw[ATTR_ADDRESS_COUNTRY][ATTR_DOLLAR_SIGN]
 
     @property
     def line1(self):
-        return self.raw[ATTR_ADDRESS_LINE1][ATTR_DOLLAR_SIGN]
+        if ATTR_ADDRESS_LINE1 in self.raw:
+            return self.raw[ATTR_ADDRESS_LINE1][ATTR_DOLLAR_SIGN]
 
     @property
     def postal_code(self):
-        return self.raw[ATTR_ADDRESS_POSTAL_CODE][ATTR_DOLLAR_SIGN]
+        if ATTR_ADDRESS_POSTAL_CODE in self.raw:
+            return self.raw[ATTR_ADDRESS_POSTAL_CODE][ATTR_DOLLAR_SIGN]
 
     @property
     def region(self):
-        return self.raw[ATTR_ADDRESS_REGION][ATTR_DOLLAR_SIGN]
+        if ATTR_ADDRESS_REGION in self.raw:
+            return self.raw[ATTR_ADDRESS_REGION][ATTR_DOLLAR_SIGN]
 
 
 class GLEIFParseRelationshipRecord:
