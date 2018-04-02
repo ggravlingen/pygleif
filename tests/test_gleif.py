@@ -109,7 +109,7 @@ def test_gleif_entity():
 
     assert data.entity.business_register_entity_id == "NO001"
     assert data.entity.legal_jurisdiction == "NO"
-    assert data.entity.legal_form == "AKSJESELSKAP"
+    assert data.entity.legal_form == "Aksjeselskap"
     assert data.entity.legal_name == "Nordic Credit Rating AS"
     assert data.entity.entity_status == "ACTIVE"
 
@@ -118,12 +118,12 @@ def test_gleif_registration():
     data = GLEIF('549300MLUDYVRQOOXS22')
 
     assert data.registration.initial_registration_date\
-        == datetime.datetime(2017, 4, 29, 2, 2, 39, 295000, tzinfo=tzutc())
+        == datetime.datetime(2017, 4, 29, 2, 2, tzinfo=tzutc())
     assert data.registration.last_update_date\
-        == datetime.datetime(2017, 4, 29, 2, 2, 39, 274000, tzinfo=tzutc())
+        == datetime.datetime(2017, 4, 29, 2, 2, tzinfo=tzutc())
     assert data.registration.registration_status == "ISSUED"
     assert data.registration.next_renewal_date\
-        == datetime.datetime(2018, 4, 27, 6, 32, 56, 863000, tzinfo=tzutc())
+        == datetime.datetime(2018, 4, 27, 6, 32, tzinfo=tzutc())
     assert data.registration.managing_lou == "EVK05KS7XY1DEII3R011"
     assert data.registration.validation_sources == "FULLY_CORROBORATED"
 

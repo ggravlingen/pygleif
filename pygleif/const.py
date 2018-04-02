@@ -30,3 +30,14 @@ ATTR_ADDRESS_REGION = 'Region'
 ATTR_REGISTER = '@register'
 ATTR_REGISTRATION = 'Registration'
 ATTR_ENTITY = 'Entity'
+
+# The ELF codes are unique per country, not globally.
+# Hence the nested dict.
+LEGAL_FORMS = {
+    'NO': {
+        'YI42': 'Aksjeselskap'
+    },
+    'SE': {
+        'XJHM': 'Aktiebolag'
+    }
+}

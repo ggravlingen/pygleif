@@ -12,6 +12,8 @@ data = GLEIF('8RS0AKOLN987042F2V04')
 print(data.registration.initial_registration_date)
 ```
 
+## 1. How to use
+
 Usage if you use the XML files:
 ```
 from pygleif import GLEIFParseRelationshipRecord
@@ -21,3 +23,5 @@ data = GLEIFParseRelationshipRecord(XML)
 print(data.raw.Relationship.StartNode.NodeID.text) #  Uses BeautifulSoup to convert to object
 
 ```
+
+There are also some examples available in the sources' example folder.

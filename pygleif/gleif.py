@@ -22,7 +22,8 @@ from .const import (
     ATTR_REGISTRATION_STATUS,
     ATTR_REGISTRATION,
     ATTR_VALIDATION_SOURCES,
-    URL_API
+    URL_API,
+    LEGAL_FORMS
 )
 import urllib.request
 import json
@@ -107,9 +108,19 @@ class GLEIFEntity:
 
     @property
     def business_register_entity_id(self):
+        """
+        Some entities return the register entity id,
+        but other do not. Unsure if this is a bug or
+        inconsistently registered data.
+        """
+
         if ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID in self.raw:
-            return self.raw[
-                ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
+            try:
+                return self.raw[
+                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_DOLLAR_SIGN]
+            except KeyError:
+                return self.raw[
+                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
 
     @property
     def entity_status(self):
@@ -119,7 +130,19 @@ class GLEIFEntity:
     @property
     def legal_form(self):
         if ATTR_ENTITY_LEGAL_FORM in self.raw:
-            return self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+            try:
+                return LEGAL_FORMS[self.legal_jurisdiction][
+                    self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                ]
+            except KeyError:
+                legal_form = self.raw[
+                    ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+
+                if len(legal_form) == 4:
+                    return 'ELF code: ' + self.raw[
+                        ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                else:
+                    return self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
 
     @property
     def legal_jurisdiction(self):

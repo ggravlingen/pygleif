@@ -1,3 +1,9 @@
+# Hack to allow relative import above top level package
+import sys
+import os
+folder = os.path.dirname(os.path.abspath(__file__))  # noqa
+sys.path.insert(0, os.path.normpath("%s/.." % folder))  # noqa
+
 from pygleif.const import URL_LEVEL2_CONCAT_FILES
 from pygleif.gleif import GLEIFParseRelationshipRecord
 import arrow

@@ -13,7 +13,7 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-VERSION = "0.3.1"
+VERSION = "0.3.2"
 DOWNLOAD_URL = \
     'https://github.com/ggravlingen/pygleif/archive/{}.zip'.format(VERSION)
 
@@ -28,8 +28,8 @@ setup(
   long_description=long_description,
   author='ggravlingen',
   author_email='no@email.com',
-  url='https://github.com/pygleif',
+  url='https://github.com/ggravlingen/pygleif',
   license='MIT',
-  keywords='lei-code lei api gleif',
+  keywords='lei-code lei api gleif leicode',
   download_url=DOWNLOAD_URL
 )
