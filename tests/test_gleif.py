@@ -2,7 +2,7 @@ from pygleif.gleif import GLEIF, GLEIFParseRelationshipRecord
 import datetime
 from dateutil.tz import tzutc
 import unittest
-from sample_data import LEI_DATA, XML_DATA
+from sample_data import XML_DATA
 
 
 class TestGLEIF(unittest.TestCase):
