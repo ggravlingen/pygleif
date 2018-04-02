@@ -22,7 +22,8 @@ from .const import (
     ATTR_REGISTRATION_STATUS,
     ATTR_REGISTRATION,
     ATTR_VALIDATION_SOURCES,
-    URL_API
+    URL_API,
+    LEGAL_FORMS
 )
 import urllib.request
 import json
@@ -37,9 +38,12 @@ class GLEIF:
         self.lei_code = lei_code
 
     @property
+    def json_data(self):
+        return urllib.request.urlopen(URL_API+self.lei_code)
+
+    @property
     def raw(self):
-        r = urllib.request.urlopen(URL_API+self.lei_code)
-        return json.loads(r.read().decode('UTF-8'))[0]
+        return json.loads(self.json_data.read().decode('UTF-8'))[0]
 
     @property
     def lei(self):
@@ -107,9 +111,19 @@ class GLEIFEntity:
 
     @property
     def business_register_entity_id(self):
+        """
+        Some entities return the register entity id,
+        but other do not. Unsure if this is a bug or
+        inconsistently registered data.
+        """
+
         if ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID in self.raw:
-            return self.raw[
-                ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
+            try:
+                return self.raw[
+                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_DOLLAR_SIGN]
+            except KeyError:
+                return self.raw[
+                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
 
     @property
     def entity_status(self):
@@ -118,8 +132,29 @@ class GLEIFEntity:
 
     @property
     def legal_form(self):
+        """In some cases, the legal form is stored in the JSON-data.
+        In other cases, an ELF-code, consisting of mix of exactly
+        four letters and numbers are stored. This ELF-code
+        can be looked up in a registry where a code maps to
+        a organizational type. ELF-codes are not unique,
+        it can reoccur under different names in different
+        countries"""
+
         if ATTR_ENTITY_LEGAL_FORM in self.raw:
-            return self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+            try:
+                return LEGAL_FORMS[self.legal_jurisdiction][
+                    self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                ]
+            except KeyError:
+                legal_form = self.raw[
+                    ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+
+                if len(legal_form) == 4:
+                    # If this is returned, the ELF should
+                    # be added to the constants.
+                    return 'ELF code: ' + legal_form
+                else:
+                    return legal_form
 
     @property
     def legal_jurisdiction(self):
