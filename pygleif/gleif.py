@@ -38,9 +38,12 @@ class GLEIF:
         self.lei_code = lei_code
 
     @property
+    def json_data(self):
+        return urllib.request.urlopen(URL_API+self.lei_code)
+
+    @property
     def raw(self):
-        r = urllib.request.urlopen(URL_API+self.lei_code)
-        return json.loads(r.read().decode('UTF-8'))[0]
+        return json.loads(self.json_data.read().decode('UTF-8'))[0]
 
     @property
     def lei(self):
