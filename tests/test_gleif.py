@@ -2,7 +2,6 @@ from pygleif.gleif import GLEIF, GLEIFParseRelationshipRecord
 import datetime
 from dateutil.tz import tzutc
 import unittest
-from unittest.mock import MagicMock, PropertyMock
 from sample_data import XML_DATA
 
 
