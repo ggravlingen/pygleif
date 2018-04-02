@@ -68,8 +68,9 @@ class TestGLEIFRelationshipRecord(unittest.TestCase):
 
 class TestEntitySpecialCase(unittest.TestCase):
 
-    def setUp(self):
-        self.data = GLEIF('549300MWQEN1427O5L53')
-
     def test_break_gleif_entity(self):
-        self.assertEqual(self.data.entity.legal_form, "PUBLIKA AKTIEBOLAG")
+        data = GLEIF('549300MWQEN1427O5L53')
+        self.assertEqual(data.entity.legal_form, "PUBLIKA AKTIEBOLAG")
+
+        data = GLEIF('MAES062Z21O4RZ2U7M96')
+        self.assertEqual(data.entity.legal_form, "ELF code: ZRPO")
