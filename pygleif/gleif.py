@@ -132,6 +132,14 @@ class GLEIFEntity:
 
     @property
     def legal_form(self):
+        """In some cases, the legal form is stored in the JSON-data.
+        In other cases, an ELF-code, consisting of mix of exactly
+        four letters and numbers are stored. This ELF-code
+        can be looked up in a registry where a code maps to
+        a organizational type. ELF-codes are not unique,
+        it can reoccur under different names in different
+        countries"""
+
         if ATTR_ENTITY_LEGAL_FORM in self.raw:
             try:
                 return LEGAL_FORMS[self.legal_jurisdiction][
@@ -142,10 +150,11 @@ class GLEIFEntity:
                     ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
 
                 if len(legal_form) == 4:
-                    return 'ELF code: ' + self.raw[
-                        ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                    # If this is returned, the ELF should
+                    # be added to the constants.
+                    return 'ELF code: ' + legal_form
                 else:
-                    return self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                    return legal_form
 
     @property
     def legal_jurisdiction(self):
