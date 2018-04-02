@@ -2,6 +2,7 @@ from pygleif.gleif import GLEIF, GLEIFParseRelationshipRecord
 import datetime
 from dateutil.tz import tzutc
 import unittest
+from unittest.mock import MagicMock, PropertyMock
 from sample_data import XML_DATA
 
 
@@ -10,7 +11,7 @@ class TestGLEIF(unittest.TestCase):
     def setUp(self):
         self.data = GLEIF('549300MLUDYVRQOOXS22')
 
-    def test_gleif(self):
+    def test_lei(self):
         self.assertEqual(self.data.lei, '549300MLUDYVRQOOXS22')
 
     def test_gleif_entity(self):
@@ -64,3 +65,12 @@ class TestGLEIFRelationshipRecord(unittest.TestCase):
     def test_relationship_record(self):
         self.assertEqual(self.data.raw.Relationship.StartNode.NodeID.text,
                          '097900BEJX0000001852')
+
+
+class TestEntitySpecialCase(unittest.TestCase):
+
+    def setUp(self):
+        self.data = GLEIF('549300MWQEN1427O5L53')
+
+    def test_break_gleif_entity(self):
+        self.assertEqual(self.data.entity.legal_form, "PUBLIKA AKTIEBOLAG")
