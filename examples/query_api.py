@@ -7,7 +7,7 @@ from pprint import pprint
 from pygleif.gleif import GLEIF
 
 
-gleif_data = GLEIF('549300MLUDYVRQOOXS22')
+gleif_data = GLEIF('549300MLUDYVRQOOXS23')
 
 pprint((gleif_data.raw))
 print(gleif_data.entity.legal_jurisdiction)

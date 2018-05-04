@@ -44,12 +44,12 @@ class GLEIF:
 
     @property
     def raw(self):
-        try:
-            r = json.loads(self.json_data.read().decode('UTF-8'))[0]
-        except IndexError:
+        r = json.loads(self.json_data.read().decode('UTF-8'))
+
+        if not r:
             raise NoMatchError('LEI code does not exist.')
         else:
-            return r
+            return r[0]
 
     @property
     def lei(self):

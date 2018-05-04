@@ -1,4 +1,5 @@
 from pygleif.gleif import GLEIF, GLEIFParseRelationshipRecord
+from pygleif.error import NoMatchError
 import datetime
 from dateutil.tz import tzutc
 import unittest
@@ -15,7 +16,7 @@ class TestGLEIF(unittest.TestCase):
 
     def test_gleif_entity(self):
         self.assertEqual(self.data.entity.business_register_entity_id,
-                         "NO001")
+                         "917 685 991")
         self.assertEqual(self.data.entity.legal_jurisdiction, "NO")
         self.assertEqual(self.data.entity.legal_form, "Aksjeselskap")
         self.assertEqual(self.data.entity.legal_name,
@@ -45,10 +46,10 @@ class TestGLEIF(unittest.TestCase):
         self.assertEqual(self.data.registration.initial_registration_date,
                          datetime.datetime(2017, 4, 29, 2, 2, tzinfo=tzutc()))
         self.assertEqual(self.data.registration.last_update_date,
-                         datetime.datetime(2017, 4, 29, 2, 2, tzinfo=tzutc()))
+                         datetime.datetime(2018, 4, 9, 21, 30, tzinfo=tzutc()))
         self.assertEqual(self.data.registration.registration_status, "ISSUED")
         self.assertEqual(self.data.registration.next_renewal_date,
-                         datetime.datetime(2018, 4, 27, 6, 32,
+                         datetime.datetime(2019, 4, 3, 10, 30,
                                            tzinfo=tzutc()))
         self.assertEqual(self.data.registration.managing_lou,
                          "EVK05KS7XY1DEII3R011")
