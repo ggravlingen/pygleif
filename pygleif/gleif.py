@@ -25,6 +25,7 @@ from .const import (
     URL_API,
     LEGAL_FORMS
 )
+from .error import NoMatchError
 import urllib.request
 import json
 from bs4 import BeautifulSoup
@@ -39,11 +40,16 @@ class GLEIF:
 
     @property
     def json_data(self):
-        return urllib.request.urlopen(URL_API+self.lei_code)
+            return urllib.request.urlopen(URL_API+self.lei_code)
 
     @property
     def raw(self):
-        return json.loads(self.json_data.read().decode('UTF-8'))[0]
+        r = json.loads(self.json_data.read().decode('UTF-8'))
+
+        if not r:
+            raise NoMatchError('LEI code does not exist.')
+        else:
+            return r[0]
 
     @property
     def lei(self):

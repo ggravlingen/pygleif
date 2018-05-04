@@ -13,7 +13,7 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-VERSION = "0.3.2"
+VERSION = "0.3.3"
 DOWNLOAD_URL = \
     'https://github.com/ggravlingen/pygleif/archive/{}.zip'.format(VERSION)
 
