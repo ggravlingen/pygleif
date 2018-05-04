@@ -1,5 +1,4 @@
 from pygleif.gleif import GLEIF, GLEIFParseRelationshipRecord
-from pygleif.error import NoMatchError
 import datetime
 from dateutil.tz import tzutc
 import unittest
