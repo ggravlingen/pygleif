@@ -23,6 +23,7 @@ dist/
 # Unit test / coverage reports
 .coverage
 .tox
+*.pytest_cache
 
 # Emacs backup files
 *~

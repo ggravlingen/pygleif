@@ -1,9 +1,0 @@
-[
-  "tests/test_gleif.py::TestGLEIF::test_gleif_entity",
-  "tests/test_gleif.py::TestGLEIF::test_gleif_entity_hq_address",
-  "tests/test_gleif.py::TestGLEIF::test_gleif_entity_legal_address",
-  "tests/test_gleif.py::TestGLEIF::test_gleif_registration",
-  "tests/test_gleif.py::TestGLEIF::test_lei",
-  "tests/test_gleif.py::TestGLEIFRelationshipRecord::test_relationship_record",
-  "tests/test_gleif.py::TestEntitySpecialCase::test_break_gleif_entity"
-]
