@@ -21,14 +21,12 @@ from .const import (
     ATTR_MANAGING_LOU,
     ATTR_NEXT_RENEWAL_DATE,
     ATTR_LEI,
-    ATTR_REGISTER,
     ATTR_REGISTRATION_STATUS,
     ATTR_REGISTRATION,
     ATTR_VALIDATION_SOURCES,
     URL_API,
     LEGAL_FORMS
 )
-from .error import NoMatchError
 import urllib.request
 import json
 from bs4 import BeautifulSoup
