@@ -1,4 +1,4 @@
-from pygleif.gleif import GLEIF, GLEIFParseRelationshipRecord
+from pygleif import GLEIF, GLEIFParseRelationshipRecord
 import datetime
 from dateutil.tz import tzutc
 import unittest
@@ -14,7 +14,7 @@ class TestGLEIF(unittest.TestCase):
         self.assertEqual(self.data.lei, '549300MLUDYVRQOOXS22')
 
     def test_gleif_entity(self):
-        self.assertEqual(self.data.entity.business_register_entity_id,
+        self.assertEqual(self.data.entity.registration_authority_entity_id,
                          "917 685 991")
         self.assertEqual(self.data.entity.legal_jurisdiction, "NO")
         self.assertEqual(self.data.entity.legal_form, "Aksjeselskap")
@@ -70,7 +70,7 @@ class TestEntitySpecialCase(unittest.TestCase):
 
     def test_break_gleif_entity(self):
         data = GLEIF('549300MWQEN1427O5L53')
-        self.assertEqual(data.entity.legal_form, "PUBLIKA AKTIEBOLAG")
+        self.assertEqual(data.entity.legal_form, "Aktiebolag")
 
         data = GLEIF('MAES062Z21O4RZ2U7M96')
         self.assertEqual(data.entity.legal_form, "ELF code: ZRPO")

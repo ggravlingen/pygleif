@@ -1,31 +1,108 @@
-LEI_DATA = '''[{
-    "LEI": {"$": "549300MLUDYVRQOOXS22"},
-    "Entity": {"LegalName": {"$": "Nordic Credit Rating AS"},
-    "LegalAddress":{
-        "Line1": {"$": "Haakon VII's gate 1"},
-        "City": {"$": "Oslo"},
-        "Region": {"$": "NO-03"},
-        "Country": {"$": "NO"},
-        "PostalCode": {"$": "0161"}},
-    "HeadquartersAddress": {
-        "Line1": {"$": "Haakon VII's gate 1"},
-        "City": {"$": "Oslo"},
-        "Region": {"$": "NO-03"},
-        "Country": {"$": "NO"},
-        "PostalCode": {"$": "0161"}},
-      "BusinessRegisterEntityID": {"@register": "NO001"},
-      "LegalJurisdiction": {"$": "NO"},
-      "LegalForm": {"$": "AKSJESELSKAP"},
-      "EntityStatus": {"$": "ACTIVE"}
+LEI_DATA = '''[
+  {
+    "LEI": {
+      "$": "097900BEJX0000001852"
+    },
+    "Entity": {
+      "LegalName": {
+        "@xml:lang": "sk",
+        "$": "ZSE Energia, a.s."
+      },
+      "TransliteratedOtherEntityNames": {
+        "TransliteratedOtherEntityName": [
+          {
+            "@type": "AUTO_ASCII_TRANSLITERATED_LEGAL_NAME",
+            "$": "ZSE ENERGIA, AS"
+          }
+        ]
+      },
+      "LegalAddress": {
+        "@xml:lang": "sk",
+        "FirstAddressLine": {
+          "$": "Čulenova 6"
+        },
+        "City": {
+          "$": "Bratislava"
+        },
+        "Country": {
+          "$": "SK"
+        },
+        "PostalCode": {
+          "$": "81647"
+        }
+      },
+      "HeadquartersAddress": {
+        "@xml:lang": "sk",
+        "FirstAddressLine": {
+          "$": "Čulenova 6"
+        },
+        "City": {
+          "$": "Bratislava"
+        },
+        "Country": {
+          "$": "SK"
+        },
+        "PostalCode": {
+          "$": "81647"
+        }
+      },
+      "RegistrationAuthority": {
+        "RegistrationAuthorityID": {
+          "$": "RA000526"
+        },
+        "OtherRegistrationAuthorityID": {
+          "$": "Okresný súd Bratislava I - 3978/B"
+        },
+        "RegistrationAuthorityEntityID": {
+          "$": "36677281"
+        }
+      },
+      "LegalJurisdiction": {
+        "$": "SK"
+      },
+      "LegalForm": {
+        "EntityLegalFormCode": {
+          "$": "2EEG"
+        }
+      },
+      "EntityStatus": {
+        "$": "ACTIVE"
+      },
+      "NextVersion": null
     },
     "Registration": {
-      "InitialRegistrationDate": {"$": "2017-04-29T02:02:39.295Z"},
-      "LastUpdateDate": {"$": "2017-04-29T02:02:39.274Z"},
-      "RegistrationStatus": {"$": "ISSUED"},
-      "NextRenewalDate": {"$": "2018-04-27T06:32:56.863Z"},
-      "ManagingLOU": {"$": "EVK05KS7XY1DEII3R011"},
-      "ValidationSources": {"$": "FULLY_CORROBORATED"}
-    }
+      "InitialRegistrationDate": {
+        "$": "2014-09-23T00:00:00.00Z"
+      },
+      "LastUpdateDate": {
+        "$": "2018-11-08T00:00:00.00Z"
+      },
+      "RegistrationStatus": {
+        "$": "ISSUED"
+      },
+      "NextRenewalDate": {
+        "$": "2019-12-13T00:00:00.00Z"
+      },
+      "ManagingLOU": {
+        "$": "097900BEFH0000000217"
+      },
+      "ValidationSources": {
+        "$": "FULLY_CORROBORATED"
+      },
+      "ValidationAuthority": {
+        "ValidationAuthorityID": {
+          "$": "RA000526"
+        },
+        "OtherValidationAuthorityID": {
+          "$": "Okresný súd Bratislava I - 3978/B"
+        },
+        "ValidationAuthorityEntityID": {
+          "$": "36677281"
+        }
+      },
+      "NextVersion": null
+    },
+    "NextVersion": null
   }
 ]'''
 

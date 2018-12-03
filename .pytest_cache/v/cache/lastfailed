@@ -1,0 +1,7 @@
+{
+  "tests/test_gleif.py::ABCD::test_break_gleif_entity": true,
+  "tests/test_gleif.py::TestBrokenGLEIF::test_error": true,
+  "tests/test_gleif.py::TestGLEIF::test_entity_error": true,
+  "tests/test_gleif.py::TestGLEIFErrors::test_entity_error": true,
+  "tests/test_gleif.py::TestLEIError::test_to_check_exception_is_thrown": true
+}

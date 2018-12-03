@@ -1,10 +1,13 @@
+import warnings
 from .const import (
     ATTR_ADDRESS_CITY,
     ATTR_ADDRESS_COUNTRY,
     ATTR_DOLLAR_SIGN,
-    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID,
+    ATTR_ENTITY_REGISTRATION_AUTHORITY,
+    ATTR_ENTITY_REGISTRATION_AUTHORITY_ENTITY_ID,
     ATTR_ENTITY_ENTITY_STATUS,
     ATTR_ENTITY_LEGAL_FORM,
+    ATTR_ENTITY_LEGAL_FORM_CODE,
     ATTR_ENTITY_LEGAL_JURISDICTION,
     ATTR_ENTITY_LEGAL_NAME,
     ATTR_ADDRESS_LINE1,
@@ -18,14 +21,12 @@ from .const import (
     ATTR_MANAGING_LOU,
     ATTR_NEXT_RENEWAL_DATE,
     ATTR_LEI,
-    ATTR_REGISTER,
     ATTR_REGISTRATION_STATUS,
     ATTR_REGISTRATION,
     ATTR_VALIDATION_SOURCES,
     URL_API,
     LEGAL_FORMS
 )
-from .error import NoMatchError
 import urllib.request
 import json
 from bs4 import BeautifulSoup
@@ -43,13 +44,17 @@ class GLEIF:
             return urllib.request.urlopen(URL_API+self.lei_code)
 
     @property
-    def raw(self):
-        r = json.loads(self.json_data.read().decode('UTF-8'))
+    def lei_exists(self):
 
-        if not r:
-            raise NoMatchError('LEI code does not exist.')
-        else:
-            return r[0]
+        try:
+            self.raw
+            return False
+        except IndexError:
+            return True
+
+    @property
+    def raw(self):
+        return json.loads(self.json_data.read().decode('UTF-8'))[0]
 
     @property
     def lei(self):
@@ -116,20 +121,29 @@ class GLEIFEntity:
         return self._entity.raw[ATTR_ENTITY]
 
     @property
-    def business_register_entity_id(self):
+    def registration_authority_entity_id(self):
         """
         Some entities return the register entity id,
         but other do not. Unsure if this is a bug or
         inconsistently registered data.
         """
 
-        if ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID in self.raw:
+        if ATTR_ENTITY_REGISTRATION_AUTHORITY in self.raw:
             try:
                 return self.raw[
-                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_DOLLAR_SIGN]
+                    ATTR_ENTITY_REGISTRATION_AUTHORITY][
+                    ATTR_ENTITY_REGISTRATION_AUTHORITY_ENTITY_ID][
+                    ATTR_DOLLAR_SIGN]
             except KeyError:
-                return self.raw[
-                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
+                pass
+
+    @property
+    def business_register_entity_id(self):
+        """Deprecated."""
+
+        warnings.warn("This property is deprecated.", DeprecationWarning)
+
+        return self.registration_authority_entity_id
 
     @property
     def entity_status(self):
@@ -149,11 +163,13 @@ class GLEIFEntity:
         if ATTR_ENTITY_LEGAL_FORM in self.raw:
             try:
                 return LEGAL_FORMS[self.legal_jurisdiction][
-                    self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                    self.raw[ATTR_ENTITY_LEGAL_FORM][
+                        ATTR_ENTITY_LEGAL_FORM_CODE][ATTR_DOLLAR_SIGN]
                 ]
             except KeyError:
                 legal_form = self.raw[
-                    ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                    ATTR_ENTITY_LEGAL_FORM][
+                    ATTR_ENTITY_LEGAL_FORM_CODE][ATTR_DOLLAR_SIGN]
 
                 if len(legal_form) == 4:
                     # If this is returned, the ELF should
