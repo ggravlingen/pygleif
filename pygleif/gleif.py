@@ -269,4 +269,7 @@ class Search:
     def lei(self):
         """Return the LEI code."""
 
-        return self.raw['data'][0]['attributes']['lei']
+        try:
+            return self.raw['data'][0]['attributes']['lei']
+        except IndexError:
+            return None
