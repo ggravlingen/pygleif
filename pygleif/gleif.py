@@ -273,4 +273,3 @@ class Search:
             return self.raw['data'][0]['attributes']['lei']
         except IndexError:
             return None
-
