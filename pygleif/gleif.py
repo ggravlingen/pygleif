@@ -25,7 +25,8 @@ from .const import (
     ATTR_REGISTRATION,
     ATTR_VALIDATION_SOURCES,
     URL_API,
-    LEGAL_FORMS
+    LEGAL_FORMS,
+    URL_SEARCH,
 )
 import urllib.request
 import json
@@ -41,7 +42,7 @@ class GLEIF:
 
     @property
     def json_data(self):
-            return urllib.request.urlopen(URL_API+self.lei_code)
+        return urllib.request.urlopen(URL_API+self.lei_code)
 
     @property
     def lei_exists(self):
@@ -241,3 +242,31 @@ class GLEIFParseRelationshipRecord:
     @property
     def raw(self):
         return BeautifulSoup(self.record_xml, 'xml')
+
+
+class Search:
+    """Class to use the search form of the GLEIF web site."""
+
+    def __init__(self, orgnr=None):
+        """Init class."""
+
+        # Allow searching using organisation number
+        self.orgnr = orgnr
+
+    @property
+    def json_data(self):
+        """Get raw data from the service."""
+
+        return urllib.request.urlopen(URL_SEARCH + self.orgnr)
+
+    @property
+    def raw(self):
+        """Return parsed json."""
+
+        return json.loads(self.json_data.read().decode('UTF-8'))
+
+    @property
+    def lei(self):
+        """Return the LEI code."""
+
+        return self.raw['data'][0]['attributes']['lei']

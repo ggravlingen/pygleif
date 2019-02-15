@@ -45,10 +45,10 @@ class TestGLEIF(unittest.TestCase):
         self.assertEqual(self.data.registration.initial_registration_date,
                          datetime.datetime(2017, 4, 29, 2, 2, tzinfo=tzutc()))
         self.assertEqual(self.data.registration.last_update_date,
-                         datetime.datetime(2018, 4, 9, 21, 30, tzinfo=tzutc()))
+                         datetime.datetime(2019, 2, 5, 1, 8, tzinfo=tzutc()))
         self.assertEqual(self.data.registration.registration_status, "ISSUED")
         self.assertEqual(self.data.registration.next_renewal_date,
-                         datetime.datetime(2019, 4, 3, 10, 30,
+                         datetime.datetime(2020, 2, 5, 1, 8,
                                            tzinfo=tzutc()))
         self.assertEqual(self.data.registration.managing_lou,
                          "EVK05KS7XY1DEII3R011")
