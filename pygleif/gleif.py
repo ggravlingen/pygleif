@@ -42,7 +42,7 @@ class GLEIF:
 
     @property
     def json_data(self):
-            return urllib.request.urlopen(URL_API+self.lei_code)
+        return urllib.request.urlopen(URL_API+self.lei_code)
 
     @property
     def lei_exists(self):
