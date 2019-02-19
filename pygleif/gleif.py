@@ -249,27 +249,22 @@ class Search:
 
     def __init__(self, orgnr=None):
         """Init class."""
-
         # Allow searching using organisation number
         self.orgnr = orgnr
 
     @property
     def json_data(self):
         """Get raw data from the service."""
-
         return url.urlopen(URL_SEARCH + url.quote(self.orgnr))
 
     @property
     def raw(self):
         """Return parsed json."""
-
         return json.loads(self.json_data.read().decode('UTF-8'))
 
     @property
     def valid_record(self):
         """Loop through data to find a valid record. Return first valid."""
-        from pprint import pprint
-
         for d in self.raw['data']:
             if d['attributes']['registration']['status'] == 'ISSUED':
                 return d['attributes']
@@ -277,7 +272,6 @@ class Search:
     @property
     def lei(self):
         """Return the LEI code."""
-
         try:
             return self.valid_record['lei']
         except IndexError:
