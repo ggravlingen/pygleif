@@ -28,7 +28,7 @@ from .const import (
     LEGAL_FORMS,
     URL_SEARCH,
 )
-import urllib.request
+import urllib.request as url
 import json
 from bs4 import BeautifulSoup
 from dateutil import parser
@@ -42,7 +42,7 @@ class GLEIF:
 
     @property
     def json_data(self):
-        return urllib.request.urlopen(URL_API+self.lei_code)
+        return url.urlopen(URL_API+self.lei_code)
 
     @property
     def lei_exists(self):
@@ -257,7 +257,7 @@ class Search:
     def json_data(self):
         """Get raw data from the service."""
 
-        return urllib.request.urlopen(URL_SEARCH + self.orgnr)
+        return url.urlopen(URL_SEARCH + url.quote(self.orgnr))
 
     @property
     def raw(self):
@@ -266,10 +266,19 @@ class Search:
         return json.loads(self.json_data.read().decode('UTF-8'))
 
     @property
+    def valid_record(self):
+        """Loop through data to find a valid record. Return first valid."""
+        from pprint import pprint
+
+        for d in self.raw['data']:
+            if d['attributes']['registration']['status'] == 'ISSUED':
+                return d['attributes']
+
+    @property
     def lei(self):
         """Return the LEI code."""
 
         try:
-            return self.raw['data'][0]['attributes']['lei']
+            return self.valid_record['lei']
         except IndexError:
             return None
