@@ -27,6 +27,7 @@ from .const import (
     URL_API,
     LEGAL_FORMS,
     URL_SEARCH,
+    ALLOW_ATTR_REGISTRATION_STATUS,
 )
 import urllib.request as url
 import json
@@ -266,7 +267,11 @@ class Search:
     def valid_record(self):
         """Loop through data to find a valid record. Return first valid."""
         for d in self.raw['data']:
-            if d['attributes']['registration']['status'] == 'ISSUED':
+
+            # We're not very greedy here, but it seems some records have
+            # lapsed even through the issuer is active
+            if d['attributes']['registration']['status'] in \
+                    ALLOW_ATTR_REGISTRATION_STATUS:
                 return d['attributes']
 
     @property
