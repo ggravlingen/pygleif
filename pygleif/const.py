@@ -36,6 +36,9 @@ ATTR_REGISTER = '@register'
 ATTR_REGISTRATION = 'Registration'
 ATTR_ENTITY = 'Entity'
 
+# Allowed attributes for a record
+ALLOW_ATTR_REGISTRATION_STATUS = ['ISSUED', 'LAPSED']
+
 # The ELF codes are unique per country, not globally.
 # Hence the nested dict.
 LEGAL_FORMS = {
