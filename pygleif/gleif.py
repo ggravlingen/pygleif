@@ -274,5 +274,5 @@ class Search:
         """Return the LEI code."""
         try:
             return self.valid_record['lei']
-        except IndexError:
+        except (IndexError, TypeError):
             return None
