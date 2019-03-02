@@ -1,10 +1,13 @@
+import warnings
 from .const import (
     ATTR_ADDRESS_CITY,
     ATTR_ADDRESS_COUNTRY,
     ATTR_DOLLAR_SIGN,
-    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID,
+    ATTR_ENTITY_REGISTRATION_AUTHORITY,
+    ATTR_ENTITY_REGISTRATION_AUTHORITY_ENTITY_ID,
     ATTR_ENTITY_ENTITY_STATUS,
     ATTR_ENTITY_LEGAL_FORM,
+    ATTR_ENTITY_LEGAL_FORM_CODE,
     ATTR_ENTITY_LEGAL_JURISDICTION,
     ATTR_ENTITY_LEGAL_NAME,
     ATTR_ADDRESS_LINE1,
@@ -18,14 +21,15 @@ from .const import (
     ATTR_MANAGING_LOU,
     ATTR_NEXT_RENEWAL_DATE,
     ATTR_LEI,
-    ATTR_REGISTER,
     ATTR_REGISTRATION_STATUS,
     ATTR_REGISTRATION,
     ATTR_VALIDATION_SOURCES,
     URL_API,
-    LEGAL_FORMS
+    LEGAL_FORMS,
+    URL_SEARCH,
+    ALLOW_ATTR_REGISTRATION_STATUS,
 )
-import urllib.request
+import urllib.request as url
 import json
 from bs4 import BeautifulSoup
 from dateutil import parser
@@ -39,7 +43,16 @@ class GLEIF:
 
     @property
     def json_data(self):
-        return urllib.request.urlopen(URL_API+self.lei_code)
+        return url.urlopen(URL_API+self.lei_code)
+
+    @property
+    def lei_exists(self):
+
+        try:
+            self.raw
+            return False
+        except IndexError:
+            return True
 
     @property
     def raw(self):
@@ -110,20 +123,29 @@ class GLEIFEntity:
         return self._entity.raw[ATTR_ENTITY]
 
     @property
-    def business_register_entity_id(self):
+    def registration_authority_entity_id(self):
         """
         Some entities return the register entity id,
         but other do not. Unsure if this is a bug or
         inconsistently registered data.
         """
 
-        if ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID in self.raw:
+        if ATTR_ENTITY_REGISTRATION_AUTHORITY in self.raw:
             try:
                 return self.raw[
-                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_DOLLAR_SIGN]
+                    ATTR_ENTITY_REGISTRATION_AUTHORITY][
+                    ATTR_ENTITY_REGISTRATION_AUTHORITY_ENTITY_ID][
+                    ATTR_DOLLAR_SIGN]
             except KeyError:
-                return self.raw[
-                    ATTR_ENTITY_BUSINESS_REGISTER_ENTITY_ID][ATTR_REGISTER]
+                pass
+
+    @property
+    def business_register_entity_id(self):
+        """Deprecated."""
+
+        warnings.warn("This property is deprecated.", DeprecationWarning)
+
+        return self.registration_authority_entity_id
 
     @property
     def entity_status(self):
@@ -143,11 +165,13 @@ class GLEIFEntity:
         if ATTR_ENTITY_LEGAL_FORM in self.raw:
             try:
                 return LEGAL_FORMS[self.legal_jurisdiction][
-                    self.raw[ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                    self.raw[ATTR_ENTITY_LEGAL_FORM][
+                        ATTR_ENTITY_LEGAL_FORM_CODE][ATTR_DOLLAR_SIGN]
                 ]
             except KeyError:
                 legal_form = self.raw[
-                    ATTR_ENTITY_LEGAL_FORM][ATTR_DOLLAR_SIGN]
+                    ATTR_ENTITY_LEGAL_FORM][
+                    ATTR_ENTITY_LEGAL_FORM_CODE][ATTR_DOLLAR_SIGN]
 
                 if len(legal_form) == 4:
                     # If this is returned, the ELF should
@@ -219,3 +243,41 @@ class GLEIFParseRelationshipRecord:
     @property
     def raw(self):
         return BeautifulSoup(self.record_xml, 'xml')
+
+
+class Search:
+    """Class to use the search form of the GLEIF web site."""
+
+    def __init__(self, orgnr=None):
+        """Init class."""
+        # Allow searching using organisation number
+        self.orgnr = orgnr
+
+    @property
+    def json_data(self):
+        """Get raw data from the service."""
+        return url.urlopen(URL_SEARCH + url.quote(self.orgnr))
+
+    @property
+    def raw(self):
+        """Return parsed json."""
+        return json.loads(self.json_data.read().decode('UTF-8'))
+
+    @property
+    def valid_record(self):
+        """Loop through data to find a valid record. Return first valid."""
+        for d in self.raw['data']:
+
+            # We're not very greedy here, but it seems some records have
+            # lapsed even through the issuer is active
+            if d['attributes']['registration']['status'] in \
+                    ALLOW_ATTR_REGISTRATION_STATUS:
+                return d['attributes']
+
+    @property
+    def lei(self):
+        """Return the LEI code."""
+        try:
+            return self.valid_record['lei']
+        except (IndexError, TypeError):
+            return None

@@ -1,4 +1,4 @@
-from pygleif.gleif import GLEIF, GLEIFParseRelationshipRecord
+from pygleif import GLEIF, GLEIFParseRelationshipRecord
 import datetime
 from dateutil.tz import tzutc
 import unittest
@@ -14,41 +14,42 @@ class TestGLEIF(unittest.TestCase):
         self.assertEqual(self.data.lei, '549300MLUDYVRQOOXS22')
 
     def test_gleif_entity(self):
-        self.assertEqual(self.data.entity.business_register_entity_id,
-                         "NO001")
+        self.assertEqual(self.data.entity.registration_authority_entity_id,
+                         "917685991")
         self.assertEqual(self.data.entity.legal_jurisdiction, "NO")
         self.assertEqual(self.data.entity.legal_form, "Aksjeselskap")
         self.assertEqual(self.data.entity.legal_name,
-                         "Nordic Credit Rating AS")
+                         "NORDIC CREDIT RATING AS")
         self.assertEqual(self.data.entity.entity_status, "ACTIVE")
 
     def test_gleif_entity_legal_address(self):
         self.assertEqual(self.data.entity.legal_address.line1,
-                         "Haakon VII's gate 1")
-        self.assertEqual(self.data.entity.legal_address.city, "Oslo")
+                         "Biskop Gunnerus' gate 14A")
+        self.assertEqual(self.data.entity.legal_address.city, "OSLO")
         self.assertEqual(self.data.entity.legal_address.region, "NO-03")
         self.assertEqual(self.data.entity.legal_address.country, "NO")
-        self.assertEqual(self.data.entity.legal_address.postal_code, "0161")
+        self.assertEqual(self.data.entity.legal_address.postal_code, "0185")
 
     def test_gleif_entity_hq_address(self):
         self.assertEqual(self.data.entity.headquarters_address.line1,
-                         "Haakon VII's gate 1")
+                         "Biskop Gunnerus’ gate 14A")
         self.assertEqual(self.data.entity.headquarters_address.city, "Oslo")
         self.assertEqual(self.data.entity.headquarters_address.region,
                          "NO-03")
         self.assertEqual(self.data.entity.headquarters_address.country, "NO")
         self.assertEqual(self.data.entity.headquarters_address.postal_code,
-                         "0161")
+                         "0185")
 
     def test_gleif_registration(self):
 
         self.assertEqual(self.data.registration.initial_registration_date,
                          datetime.datetime(2017, 4, 29, 2, 2, tzinfo=tzutc()))
         self.assertEqual(self.data.registration.last_update_date,
-                         datetime.datetime(2017, 4, 29, 2, 2, tzinfo=tzutc()))
+                         datetime.datetime(2019, 2, 15, 21, 31,
+                                           tzinfo=tzutc()))
         self.assertEqual(self.data.registration.registration_status, "ISSUED")
         self.assertEqual(self.data.registration.next_renewal_date,
-                         datetime.datetime(2018, 4, 27, 6, 32,
+                         datetime.datetime(2020, 2, 5, 1, 8,
                                            tzinfo=tzutc()))
         self.assertEqual(self.data.registration.managing_lou,
                          "EVK05KS7XY1DEII3R011")
@@ -70,7 +71,7 @@ class TestEntitySpecialCase(unittest.TestCase):
 
     def test_break_gleif_entity(self):
         data = GLEIF('549300MWQEN1427O5L53')
-        self.assertEqual(data.entity.legal_form, "PUBLIKA AKTIEBOLAG")
+        self.assertEqual(data.entity.legal_form, "Aktiebolag")
 
         data = GLEIF('MAES062Z21O4RZ2U7M96')
         self.assertEqual(data.entity.legal_form, "ELF code: ZRPO")
