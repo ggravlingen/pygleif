@@ -27,6 +27,7 @@ from .const import (
     URL_API,
     LEGAL_FORMS,
     URL_SEARCH,
+    URL_DIRECT_CHILD,
     ALLOW_ATTR_REGISTRATION_STATUS,
 )
 import urllib.request as url
@@ -281,3 +282,36 @@ class Search:
             return self.valid_record['lei']
         except (IndexError, TypeError):
             return None
+
+
+class DirectChild:
+
+    def __init__(self, lei=''):
+        """Init class."""
+        # Allow searching using organisation number
+        self.lei = lei
+
+    @property
+    def json_data(self):
+        """Get raw data from the service."""
+        return url.urlopen(URL_DIRECT_CHILD.format(self.lei))
+
+    @property
+    def raw(self):
+        """Return parsed json."""
+        return json.loads(self.json_data.read().decode('UTF-8'))
+
+    @property
+    def valid_child_records(self):
+        child_lei = list()
+
+        """Loop through data to find a valid record. Return list of LEI."""
+        for d in self.raw['data']:
+
+            # We're not very greedy here, but it seems some records have
+            # lapsed even through the issuer is active
+            if d['attributes']['relationship']['status'] in ['ACTIVE']:
+                child_lei.append(
+                    d['attributes']['relationship']['startNode']['id'])
+
+        return child_lei
