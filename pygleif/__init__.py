@@ -1,5 +1,6 @@
 """Make Python interpret this as a package."""
 
-from .gleif import GLEIF, GLEIFParseRelationshipRecord, Search, DirectChild
+from .gleif import GLEIF
+from .search import DirectChild, GLEIFParseRelationshipRecord, Search
 
-__all__ = ['GLEIF', 'GLEIFParseRelationshipRecord', 'Search', 'DirectChild']
+__all__ = ["GLEIF"]

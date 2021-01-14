@@ -4,3 +4,4 @@ pytest-timeout>=1.2.0
 coveralls
 pytest-cov
 mock
+black==20.8b1
