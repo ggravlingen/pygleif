@@ -1,4 +1,4 @@
-LEI_DATA = '''[
+LEI_DATA = """[
   {
     "LEI": {
       "$": "097900BEJX0000001852"
@@ -104,10 +104,10 @@ LEI_DATA = '''[
     },
     "NextVersion": null
   }
-]'''
+]"""
 
 
-XML_DATA = '''<rr:Relationship>
+XML_DATA = """<rr:Relationship>
             <rr:StartNode>
                 <rr:NodeID>097900BEJX0000001852</rr:NodeID>
                 <rr:NodeIDType>LEI</rr:NodeIDType>
@@ -154,4 +154,4 @@ XML_DATA = '''<rr:Relationship>
             <rr:ManagingLOU>097900BEFH0000000217</rr:ManagingLOU>
             <rr:ValidationSources>FULLY_CORROBORATED</rr:ValidationSources>
             <rr:ValidationDocuments>OTHER_OFFICIAL_DOCUMENTS</rr:ValidationDocuments>
-        </rr:Registration>'''
+        </rr:Registration>"""
