@@ -1,10 +1,9 @@
-[![Coverage Status](https://coveralls.io/repos/github/ggravlingen/pygleif/badge.svg)](https://coveralls.io/github/ggravlingen/pygleif)
 [![PyPI version](https://badge.fury.io/py/pygleif.svg)](https://badge.fury.io/py/pygleif)
-[![Build Status](https://travis-ci.org/ggravlingen/pygleif.svg?branch=master)](https://travis-ci.org/ggravlingen/pygleif)
 
 This is a Python class that queries the API of GLEIF.org to return data about a specific entity (corporation.) It can also parse the XML-files provided by GLEIF. It is also possible to search for organisation id to find LEI codes and also to get child notes for a specific LEI code.
 
 Usage if you query the API:
+
 ```
 from pygleif import GLEIF
 
@@ -15,6 +14,7 @@ print(data.registration.initial_registration_date)
 ## 1. How to use
 
 Usage if you use the XML files:
+
 ```
 from pygleif import GLEIFParseRelationshipRecord
 

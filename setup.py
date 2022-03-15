@@ -1,34 +1,43 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+"""Set up pygleif."""
 
-# To use a consistent encoding
-from codecs import open
-from os import path
+from pathlib import Path
 
 from setuptools import find_packages, setup
 
-here = path.abspath(path.dirname(__file__))
+PROJECT_DIR = Path(__file__).parent.resolve()
+README_FILE = PROJECT_DIR / "README.md"
+LONG_DESCRIPTION = README_FILE.read_text(encoding="utf-8")
 
-# Get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+VERSION = (PROJECT_DIR / "pygleif" / "VERSION").read_text().strip()
 
-VERSION = "3.0.0"
-DOWNLOAD_URL = 'https://github.com/ggravlingen/pygleif/archive/{}.zip'.format(VERSION)
+GITHUB_URL = "https://github.com/ggravlingen/pygleif"
+DOWNLOAD_URL = f"{GITHUB_URL}/archive/{VERSION}.zip"
 
-PACKAGES = find_packages(exclude=['tests', 'tests.*'])
+PACKAGES = find_packages(exclude=["tests", "tests.*"])
 
 setup(
-    name='pygleif',
+    name="pygleif",
     packages=PACKAGES,
-    python_requires='>=3.8',
+    python_requires=">=3.8",
     version=VERSION,
-    description='API for LEI',
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     author='ggravlingen',
-    author_email='no@email.com',
-    url='https://github.com/ggravlingen/pygleif',
-    license='MIT',
+    author_email="no@email.com",
+    long_description_content_type="text/markdown",
+    url=GITHUB_URL,
+    include_package_data=True,
+    license="MIT",
     keywords='lei-code lei api gleif leicode',
     download_url=DOWNLOAD_URL,
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Home Automation",
+    ],
 )
