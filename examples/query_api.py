@@ -1,14 +1,16 @@
 # Hack to allow relative import above top level package
-import sys
 import os
+import sys
+
 folder = os.path.dirname(os.path.abspath(__file__))  # noqa
 sys.path.insert(0, os.path.normpath("%s/.." % folder))  # noqa
 from pprint import pprint
-from pygleif.gleif import GLEIF
-from pygleif import Search
 
-gleif_data = GLEIF('506700GE1G29325QX363')
-gleif_search = Search('986228608')
+from pygleif import Search
+from pygleif.gleif import GLEIF
+
+gleif_data = GLEIF("506700GE1G29325QX363")
+gleif_search = Search("986228608")
 
 
 pprint((gleif_data.raw))
