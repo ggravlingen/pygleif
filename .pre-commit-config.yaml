@@ -1,0 +1,49 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 22.1.0
+    hooks:
+      - id: black
+        name: black
+        args:
+          - --safe
+          - --quiet
+        files: ^(pygleif|examples|tests)/.+\.py$
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        name: flake8
+        entry: flake8
+        additional_dependencies:
+          - flake8-docstrings==1.6.0
+          - flake8-comprehensions==3.5.0
+          - flake8-noqa==1.1.0
+        files: ^(pygleif|examples|tests)/.+\.py$
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.9.3
+    hooks:
+      - id: isort
+        name: isort
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        stages: [manual]
+        # DO NOT ACTIVATE until all files have been manually updated.
+        entry: pylint
+        language: system
+        types: [python]
+        files: ^(pygleif|examples|tests)/.+\.py$
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        args:
+          - --timeout=30
+          - --cov=pygleif
+          - --cov-report=html
+        stages: [push, manual]
+        entry: pytest
+        language: system
+        types: [python]
+        files: tests
