@@ -22,7 +22,7 @@ PACKAGES = find_packages(exclude=['tests', 'tests.*'])
 setup(
   name='pygleif',
   packages=PACKAGES,
-  python_requires='>=3.4',
+  python_requires='>=3.8',
   version=VERSION,
   description='API for LEI',
   long_description=long_description,
