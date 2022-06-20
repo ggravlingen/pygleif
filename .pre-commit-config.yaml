@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 22.1.0
+    rev: 22.3.0
     hooks:
       - id: black
         name: black
@@ -9,7 +9,7 @@ repos:
           - --quiet
         files: ^(pygleif|examples|tests)/.+\.py$
   - repo: https://github.com/pycqa/flake8
-    rev: 3.9.2
+    rev: 4.0.1
     hooks:
       - id: flake8
         name: flake8
@@ -20,7 +20,7 @@ repos:
           - flake8-noqa==1.1.0
         files: ^(pygleif|examples|tests)/.+\.py$
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.3
+    rev: 5.10.1
     hooks:
       - id: isort
         name: isort
