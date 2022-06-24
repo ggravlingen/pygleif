@@ -1,20 +1,17 @@
+"""Example."""
 # Hack to allow relative import above top level package
 import os
 import sys
 
-folder = os.path.dirname(os.path.abspath(__file__))  # noqa
-sys.path.insert(0, os.path.normpath("%s/.." % folder))  # noqa
-from pprint import pprint
+folder = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.normpath("%s/.." % folder))
+from pygleif import PyGleif
 
-from pygleif import Search
-from pygleif.gleif import GLEIF
-
-gleif_data = GLEIF("506700GE1G29325QX363")
-gleif_search = Search("986228608")
-
-
-pprint((gleif_data.raw))
-print(gleif_data.entity.legal_jurisdiction)
-print(gleif_data.entity.legal_form)
-print(gleif_data.entity.business_register_entity_id)
-print(gleif_search.lei)
+for entity in [
+    "549300MLUDYVRQOOXS22",
+    "M312WZV08Y7LYUC71685",
+    "IGJSJL3JD5P30I6NJZ34",
+    "3C7474T6CDKPR9K6YT90",
+]:
+    gleif: PyGleif = PyGleif(entity)
+    print(gleif.response.data.attributes.registration.initial_registration_date)

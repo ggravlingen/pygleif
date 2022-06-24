@@ -22,7 +22,7 @@
 			"88"
 		],
 		"python.linting.enabled": true,
-		"editor.formatOnPaste": false,
+		"editor.formatOnPaste": true,
 		"editor.formatOnSave": true,
 		"editor.formatOnType": true,
 		"files.trimTrailingWhitespace": true,

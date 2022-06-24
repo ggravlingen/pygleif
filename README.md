@@ -1,6 +1,8 @@
 [![PyPI version](https://badge.fury.io/py/pygleif.svg)](https://badge.fury.io/py/pygleif)
 
-This is a Python class that queries the API of GLEIF.org to return data about a specific entity (corporation.) It can also parse the XML-files provided by GLEIF. It is also possible to search for organisation id to find LEI codes and also to get child notes for a specific LEI code.
+This library queries the API of GLEIF.org to return data about a specific entity company. The result is typed using `Pydantic`.
+
+It can also parse the XML-files provided by GLEIF. It is also possible to search for organisation id to find LEI codes and also to get child notes for a specific LEI code.
 
 Usage if you query the API:
 
