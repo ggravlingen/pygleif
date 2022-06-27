@@ -1,15 +1,7 @@
 """Constants."""
 URL_API = "https://api.gleif.org/api/v1/lei-records/"
 URL_SEARCH = "https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D="
-URL_DIRECT_CHILD = (
-    "https://api.gleif.org/api/v1/lei-records/{}/direct-child-relationships"
-)
 
-
-ATTR_REGISTRATION = "registration"
-
-# Allowed attributes for a record
-ALLOW_ATTR_REGISTRATION_STATUS = ["ISSUED", "LAPSED"]
 
 # The ELF codes are unique per country, not globally.
 # Hence the nested dict.

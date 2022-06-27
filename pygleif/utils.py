@@ -3,12 +3,10 @@ from __future__ import annotations
 
 import json
 from typing import Any, Dict, List, Union, cast
-import urllib.request as url
-
-from .const import URL_API
+from urllib import request
 
 
-def load_json(lei_code: str) -> list[Any] | dict[Any, Any]:
+def load_json(search_url: str, search_string: str) -> list[Any] | dict[Any, Any]:
     """Download data as JSON."""
-    with url.urlopen(f"{URL_API}{lei_code}") as fdesc:
+    with request.urlopen(f"{search_url}{request.quote(search_string)}") as fdesc:
         return cast(Union[Dict[Any, Any], List[Any]], json.loads(fdesc.read()))
