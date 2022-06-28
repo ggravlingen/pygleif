@@ -92,7 +92,7 @@ class Entity(BaseModel):
     legal_form: LegalForm = Field(alias="legalForm")
     legal_name: Name = Field(alias="legalName")
     other_addresses: List[Any] = Field(alias="otherAddresses")
-    other_names: Name = Field(alias="otherNames")
+    other_names: List[Name] = Field(alias="otherNames")
     registered_as: str = Field(alias="registeredAs")
     registered_at: RegisteredAt = Field(alias="registeredAt")
     status: str = Field(alias="status")
