@@ -44,9 +44,9 @@ class Address(BaseModel):
     )
     mail_routing: Optional[str] = Field(alias="mailRouting")
     city: str = Field(alias="city")
-    region: str = Field(alias="region")
+    region: Optional[str] = Field(alias="region")
     country: str = Field(alias="country")
-    postal_code: str = Field(alias="postalCode")
+    postal_code: Optional[str] = Field(alias="postalCode")
 
 
 class Expiration(BaseModel):

@@ -34,3 +34,10 @@ def test_search_lei(gleif_search_fixture: Search):
 def test_search_id(gleif_search_fixture: Search):
     """Test ID attribute."""
     assert gleif_search_fixture.response.data[0].id, "549300MLUDYVRQOOXS22"
+
+
+@pytest.mark.parametrize("lei", ["969500NTPM8P4LAT9V13"])
+def test_different_lei(lei: str):
+    """Test various LEI."""
+    PyGleif(lei_code=lei)
+    assert True
