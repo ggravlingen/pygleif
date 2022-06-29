@@ -1,5 +1,5 @@
 """Search."""
-
+from __future__ import annotations
 
 from pygleif.api import SearchResponse
 from pygleif.const import URL_SEARCH
