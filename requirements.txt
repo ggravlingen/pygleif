@@ -1,4 +1,4 @@
-arrow==1.2.2
+arrow==1.2.3
 wget==3.2.0
 beautifulsoup4==4.11.1
 lxml==4.9.1
