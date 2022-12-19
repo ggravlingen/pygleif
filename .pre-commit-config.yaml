@@ -18,7 +18,7 @@ repos:
           - --quiet
         files: ^(pygleif|examples|tests)/.+\.py$
   - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: v5.11.3
     hooks:
       - id: isort
         name: isort
