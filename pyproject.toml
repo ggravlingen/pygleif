@@ -8,7 +8,7 @@ py-version = "3.10"
 class-const-naming-style = "any"
 
 [tool.pylint."MESSAGES CONTROL"]
-extension-pkg-whitelist=pydantic
+extension-pkg-whitelist="pydantic"
 
 [tool.pylint.REPORTS]
 score = false
