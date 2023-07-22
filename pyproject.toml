@@ -17,12 +17,14 @@ expected-line-ending-format = "LF"
 
 [tool.pylint.EXCEPTIONS]
 overgeneral-exceptions = [
-    "BaseException",
-    "Exception",
+    "builtins.BaseException",
+    "builtins.Exception",
 ]
 
 [tool.pylint.TYPING]
-runtime-typing = false
+disable = [
+    "too-few-public-methods"
+]
 
 [tool.pytest.ini_options]
 testpaths = [
