@@ -42,15 +42,14 @@ exclude = [
 target-version = "py311"
 
 select = [
-#    "C",  # complexity
-#    "D",  # docstrings
-#    "E",  # pycodestyle
-#    "F",  # pyflakes/autoflake
+    "C",  # complexity
+    "D",  # docstrings
+    "E",  # pycodestyle
+    "F",  # pyflakes/autoflake
     "I",  # isort
-#    "T20", # flake8-print
-#    "PD", # pandas-vet
+    "T20", # flake8-print
     "UP",  # pyupgrade
-#    "W",  # pycodestyle
+    "W",  # pycodestyle
 ]
 
 # Same as Black.
