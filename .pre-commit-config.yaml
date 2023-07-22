@@ -1,4 +1,11 @@
+---
 repos:
+  - hooks:
+      - args:
+          - "--fix"
+        id: ruff
+    repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.278
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
@@ -7,7 +14,7 @@ repos:
         exclude: (.vscode|.devcontainer)
       - id: no-commit-to-branch
         args:
-          - --branch=master
+          - --branch=main
   - repo: https://github.com/psf/black
     rev: 23.7.0
     hooks:
@@ -17,11 +24,6 @@ repos:
           - --safe
           - --quiet
         files: ^(pygleif|examples|tests)/.+\.py$
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort
   - repo: local
     hooks:
       - id: pylint
@@ -45,11 +47,3 @@ repos:
         language: system
         types: [python]
         files: tests
-  - repo: local
-    hooks:
-      - id: flake8
-        name: flake8
-        entry: flake8
-        language: system
-        types: [python]
-        files: ^(pygleif|examples|tests)/.+\.py$

@@ -1,8 +1,6 @@
 """Search."""
 from __future__ import annotations
 
-from typing import Optional
-
 from pygleif.api import SearchResponse
 from pygleif.const import URL_SEARCH
 
@@ -12,7 +10,7 @@ from .utils import load_json
 class Search:
     """Class to use the search form of the GLEIF web site."""
 
-    response = Optional[SearchResponse]
+    response = SearchResponse | None
 
     def __init__(self, orgnr: str) -> None:
         """Init class."""

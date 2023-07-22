@@ -19,7 +19,7 @@ PACKAGES = find_packages(exclude=["tests", "tests.*"])
 setup(
     name="pygleif",
     packages=PACKAGES,
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     version=VERSION,
     long_description=LONG_DESCRIPTION,
     author='ggravlingen',
@@ -34,9 +34,8 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Intended Audience :: Financial and Insurance Industry",
     ],
 )

@@ -5,7 +5,7 @@ import sys
 
 folder = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.normpath("%s/.." % folder))
-from pygleif import PyGleif
+from pygleif import PyGleif  # noqa: E402
 
 for entity in [
     "549300MLUDYVRQOOXS22",
@@ -14,4 +14,6 @@ for entity in [
     "3C7474T6CDKPR9K6YT90",
 ]:
     gleif: PyGleif = PyGleif(entity)
-    print(gleif.response.data.attributes.registration.initial_registration_date)
+    print(  # noqa: T201
+        gleif.response.data.attributes.registration.initial_registration_date
+    )

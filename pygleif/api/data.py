@@ -1,6 +1,6 @@
 """Data."""
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -9,7 +9,7 @@ class ValidatedAt(BaseModel):
     """Represent validated at information."""
 
     id: str = Field(alias="id")
-    other: Optional[str] = Field(alias="other")
+    other: str | None = Field(alias="other")
 
 
 class Registration(BaseModel):
@@ -20,7 +20,7 @@ class Registration(BaseModel):
     last_update_date: datetime = Field(alias="lastUpdateDate")
     managing_lou: str = Field(alias="managingLou")
     next_renewal_date: datetime = Field(alias="nextRenewalDate")
-    other_validation_authorities: List[Any] = Field(alias="otherValidationAuthorities")
+    other_validation_authorities: list[Any] = Field(alias="otherValidationAuthorities")
     status: str = Field(alias="status")
     validated_as: str = Field(alias="validatedAs")
     validated_at: ValidatedAt = Field(alias="validatedAt")
@@ -29,38 +29,38 @@ class Registration(BaseModel):
 class GeneralEntity(BaseModel):
     """Represent a general entity ."""
 
-    lei: Optional[str] = Field(alias="lei")
-    name: Optional[str] = Field(alias="name")
+    lei: str | None = Field(alias="lei")
+    name: str | None = Field(alias="name")
 
 
 class Address(BaseModel):
     """Represent address ."""
 
     language: str = Field(alias="language")
-    address_lines: List[str] = Field(alias="addressLines")
-    address_number: Optional[str] = Field(alias="addressNumber")
-    address_number_within_building: Optional[str] = Field(
+    address_lines: list[str] = Field(alias="addressLines")
+    address_number: str | None = Field(alias="addressNumber")
+    address_number_within_building: str | None = Field(
         alias="addressNumberWithinBuilding"
     )
-    mail_routing: Optional[str] = Field(alias="mailRouting")
+    mail_routing: str | None = Field(alias="mailRouting")
     city: str = Field(alias="city")
-    region: Optional[str] = Field(alias="region")
+    region: str | None = Field(alias="region")
     country: str = Field(alias="country")
-    postal_code: Optional[str] = Field(alias="postalCode")
+    postal_code: str | None = Field(alias="postalCode")
 
 
 class Expiration(BaseModel):
     """Represent expiration data."""
 
-    date: Optional[str] = Field(alias="date")
-    reason: Optional[str] = Field(alias="reason")
+    date: str | None = Field(alias="date")
+    reason: str | None = Field(alias="reason")
 
 
 class LegalForm(BaseModel):
     """Represent the legal form."""
 
-    id: Optional[str] = Field(alias="id")
-    other: Optional[str] = Field(alias="other")
+    id: str | None = Field(alias="id")
+    other: str | None = Field(alias="other")
 
 
 class Name(BaseModel):
@@ -68,14 +68,14 @@ class Name(BaseModel):
 
     language: str = Field(alias="language")
     name: str = Field(alias="name")
-    type: Optional[str] = Field(alias="type")
+    type: str | None = Field(alias="type")
 
 
 class RegisteredAt(BaseModel):
     """Represent registered at."""
 
     id: str = Field(alias="id")
-    other: Optional[str] = Field(alias="other")
+    other: str | None = Field(alias="other")
 
 
 class Entity(BaseModel):
@@ -83,29 +83,29 @@ class Entity(BaseModel):
 
     associated_entity: GeneralEntity = Field(alias="associatedEntity")
     category: str = Field(alias="category")
-    creation_date: Optional[str] = Field(alias="creationDate")
-    event_groups: List[Any] = Field(alias="eventGroups")
+    creation_date: str | None = Field(alias="creationDate")
+    event_groups: list[Any] = Field(alias="eventGroups")
     expiration: Expiration = Field(alias="expiration")
     headquarters_address: Address = Field(alias="headquartersAddress")
     jurisdiction: str = Field(alias="jurisdiction")
     legal_address: Address = Field(alias="legalAddress")
     legal_form: LegalForm = Field(alias="legalForm")
     legal_name: Name = Field(alias="legalName")
-    other_addresses: List[Any] = Field(alias="otherAddresses")
-    other_names: List[Name] = Field(alias="otherNames")
+    other_addresses: list[Any] = Field(alias="otherAddresses")
+    other_names: list[Name] = Field(alias="otherNames")
     registered_as: str = Field(alias="registeredAs")
     registered_at: RegisteredAt = Field(alias="registeredAt")
     status: str = Field(alias="status")
-    successor_entities: List[Any] = Field(alias="successorEntities")
-    sub_category: Optional[str] = Field(alias="subCategory")
+    successor_entities: list[Any] = Field(alias="successorEntities")
+    sub_category: str | None = Field(alias="subCategory")
     successor_entity: GeneralEntity = Field(alias="successorEntity")
-    transliteraded_other_names: List[Any] = Field(alias="transliteratedOtherNames")
+    transliteraded_other_names: list[Any] = Field(alias="transliteratedOtherNames")
 
 
 class Attributes(BaseModel):
     """Represent attribute information."""
 
-    bic: Optional[List[str]] = Field(alias="bic")
+    bic: list[str] | None = Field(alias="bic")
     lei: str = Field(alias="lei")
     entity: Entity = Field(alias="entity")
     registration: Registration = Field(alias="registration")
@@ -114,9 +114,9 @@ class Attributes(BaseModel):
 class LinkData(BaseModel):
     """Represent a link ."""
 
-    self: Optional[str] = Field(alias="self")
-    related: Optional[str] = Field(alias="related")
-    reporting_exception: Optional[str] = Field(alias="reporting-exception")
+    self: str | None = Field(alias="self")
+    related: str | None = Field(alias="related")
+    reporting_exception: str | None = Field(alias="reporting-exception")
 
 
 class Links(BaseModel):

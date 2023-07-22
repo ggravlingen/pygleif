@@ -1,6 +1,5 @@
 """Meta data."""
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -27,4 +26,4 @@ class Meta(BaseModel):
 
     golden_copy: GoldenCopy = Field(alias="goldenCopy")
     # Pagination is part of the search response
-    pagination: Optional[Pagination] = Field(alias="pagination")
+    pagination: Pagination | None = Field(alias="pagination")
