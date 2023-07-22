@@ -74,31 +74,31 @@ jobs:
           pip install -r requirements_test.txt
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
 
-  # linter:
-  #   name: Run code linters
-  #   needs:
-  #     - create-virtualenv
-  #     - info
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 30
-  #   strategy:
-  #     matrix:
-  #       python-version: ${{ fromJSON(needs.info.outputs.python_versions) }}
-  #   if: needs.info.outputs.run_pipeline == 'true'
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v3.5.3
-  #       with:
-  #         fetch-depth: "2"
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v4.7.0
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - uses: syphar/restore-virtualenv@v1.3
-  #       id: cache-virtualenv
-  #     - name: Run ruff (fully)
-  #       run: |
-  #         pre-commit run --hook-stage manual ruff --all-files --show-diff-on-failure
+  linter:
+    name: Run code linters
+    needs:
+      - create-virtualenv
+      - info
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        python-version: ${{ fromJSON(needs.info.outputs.python_versions) }}
+    if: needs.info.outputs.run_pipeline == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.5.3
+        with:
+          fetch-depth: "2"
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4.7.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: syphar/restore-virtualenv@v1.3
+        id: cache-virtualenv
+      - name: Run ruff (fully)
+        run: |
+          pre-commit run --hook-stage manual ruff --all-files --show-diff-on-failure
   #     - name: Run Black
   #       run: black --check --fast --quiet --diff pyesef tests
   #     - name: Run mypy
