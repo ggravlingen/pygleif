@@ -132,9 +132,7 @@ jobs:
 
       - name: Run tests
         run: |
-          export PYTEST_ARGS="--timeout=30 --cov pyesef --cov-report xml:coverage.xml"
-
-          pytest tests/ $PYTEST_ARGS
+          pytest tests/ --timeout=30 --cov pygleif --cov-report xml:coverage.xml
 
       - name: Post coverage
         uses: orgoro/coverage@v3
