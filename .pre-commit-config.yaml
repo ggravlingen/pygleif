@@ -7,7 +7,7 @@ repos:
         exclude: (.vscode|.devcontainer)
       - id: no-commit-to-branch
         args:
-          - --branch=master
+          - --branch=main
   - repo: https://github.com/psf/black
     rev: 23.7.0
     hooks:
