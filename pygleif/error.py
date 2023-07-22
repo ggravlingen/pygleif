@@ -2,7 +2,7 @@
 
 
 class PyGLEIFError(Exception):
-    """Base Error"""
+    """Base Error."""
 
     pass
 
