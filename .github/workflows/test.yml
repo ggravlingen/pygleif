@@ -99,12 +99,12 @@ jobs:
       - name: Run ruff (fully)
         run: |
           pre-commit run --hook-stage manual ruff --all-files --show-diff-on-failure
-  #     - name: Run Black
-  #       run: black --check --fast --quiet --diff pyesef tests
-  #     - name: Run mypy
-  #       run: mypy pyesef
-  #     - name: Run pylint
-  #       run: pylint pyesef tests
+      - name: Run Black
+        run: black --check --fast --quiet --diff pygleif tests
+      #     - name: Run mypy
+      #       run: mypy pyesef
+      - name: Run pylint
+        run: pylint pygleif tests
 
   pytest:
     name: Run test suite

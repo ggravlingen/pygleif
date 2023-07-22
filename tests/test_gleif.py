@@ -4,8 +4,8 @@ import pytest
 from pygleif import PyGleif
 
 
-@pytest.fixture(scope="module")
-def gleif_fixture_1() -> PyGleif:
+@pytest.fixture(scope="module", name="gleif_fixture_1")
+def data_fixture() -> PyGleif:
     """Fixture."""
     return PyGleif("549300MLUDYVRQOOXS22")
 

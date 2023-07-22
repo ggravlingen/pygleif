@@ -5,8 +5,8 @@ import pytest
 from pygleif import Search
 
 
-@pytest.fixture(scope="module")
-def gleif_search_fixture() -> Search:
+@pytest.fixture(scope="module", name="gleif_search_fixture")
+def search_data() -> Search:
     """Fixture."""
     return Search("917685991")
 
@@ -23,5 +23,5 @@ def test_search_id(gleif_search_fixture: Search):
 
 def test_search_fail():
     """Test failing search."""
-    return Search("968278304")
+    Search("968278304")
     assert True

@@ -8,6 +8,7 @@ py-version = "3.10"
 class-const-naming-style = "any"
 
 [tool.pylint."MESSAGES CONTROL"]
+extension-pkg-whitelist="pydantic"
 
 [tool.pylint.REPORTS]
 score = false
@@ -17,12 +18,14 @@ expected-line-ending-format = "LF"
 
 [tool.pylint.EXCEPTIONS]
 overgeneral-exceptions = [
-    "BaseException",
-    "Exception",
+    "builtins.BaseException",
+    "builtins.Exception",
 ]
 
 [tool.pylint.TYPING]
-runtime-typing = false
+disable = [
+    "too-few-public-methods"
+]
 
 [tool.pytest.ini_options]
 testpaths = [
