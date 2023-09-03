@@ -1,6 +1,6 @@
 """Pydantic Representation of models."""
 
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 from .data import Data
 from .meta import Meta

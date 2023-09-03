@@ -23,5 +23,5 @@ def test_search_id(gleif_search_fixture: Search):
 
 def test_search_fail():
     """Test failing search."""
-    return Search("968278304")
+    Search("968278304")
     assert True
