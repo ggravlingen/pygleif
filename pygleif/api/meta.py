@@ -1,7 +1,7 @@
 """Meta data."""
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class GoldenCopy(BaseModel):
