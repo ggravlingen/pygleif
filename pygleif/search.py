@@ -1,4 +1,5 @@
 """Search."""
+
 from __future__ import annotations
 
 from pygleif.api import SearchResponse

@@ -1,4 +1,5 @@
 """Tests."""
+
 import pytest
 
 from pygleif import PyGleif
