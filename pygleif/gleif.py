@@ -1,4 +1,5 @@
 """GLEIF API."""
+
 from .api import GLEIFResponse
 from .const import URL_API
 from .utils import load_json

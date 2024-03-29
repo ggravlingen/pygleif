@@ -1,4 +1,5 @@
 """Meta data."""
+
 from datetime import datetime
 
 from pydantic.v1 import BaseModel, Field
