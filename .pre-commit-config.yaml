@@ -5,9 +5,9 @@ repos:
           - "--fix"
         id: ruff
     repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.3.4
+    rev: v0.3.5
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: requirements-txt-fixer
       - id: check-json
