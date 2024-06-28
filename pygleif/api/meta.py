@@ -16,7 +16,7 @@ class Pagination(BaseModel):
 
     current_page: int = Field(alias="currentPage")
     per_page: int = Field(alias="perPage")
-    _from: int = Field(alias="from")
+    from_: int = Field(alias="from")
     to: int = Field(alias="to")
     total: int = Field(alias="total")
     last_page: int = Field(alias="lastPage")
