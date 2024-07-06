@@ -1,6 +1,6 @@
 """Pydantic Representation of models."""
 
-from pydantic.v1 import BaseModel, Field
+from pydantic import BaseModel
 
 from .data import Data
 from .meta import Meta
@@ -9,12 +9,12 @@ from .meta import Meta
 class GLEIFResponse(BaseModel):
     """Represent a base response."""
 
-    meta: Meta = Field(alias="meta")
-    data: Data = Field(alias="data")
+    meta: Meta
+    data: Data
 
 
 class SearchResponse(BaseModel):
     """Represent search result response."""
 
-    meta: Meta = Field(alias="meta")
-    data: list[Data] = Field(alias="data")
+    meta: Meta
+    data: list[Data]

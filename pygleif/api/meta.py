@@ -2,29 +2,28 @@
 
 from datetime import datetime
 
-from pydantic.v1 import BaseModel, Field
+from .shared import BaseSchema
 
 
-class GoldenCopy(BaseModel):
+class GoldenCopy(BaseSchema):
     """Represent golden copy information."""
 
-    publish_date: datetime = Field(alias="publishDate")
+    publish_date: datetime
 
 
-class Pagination(BaseModel):
+class Pagination(BaseSchema):
     """Represent response pagination."""
 
-    current_page: int = Field(alias="currentPage")
-    per_page: int = Field(alias="perPage")
-    _from: int = Field(alias="from")
-    to: int = Field(alias="to")
-    total: int = Field(alias="total")
-    last_page: int = Field(alias="lastPage")
+    current_page: int
+    per_page: int
+    _from: int
+    to: int
+    total: int
+    last_page: int
 
 
-class Meta(BaseModel):
+class Meta(BaseSchema):
     """Represent meta information."""
 
-    golden_copy: GoldenCopy = Field(alias="goldenCopy")
-    # Pagination is part of the search response
-    pagination: Pagination | None = Field(alias="pagination")
+    golden_copy: GoldenCopy
+    pagination: Pagination | None = None

@@ -3,144 +3,142 @@
 from datetime import datetime
 from typing import Any
 
-from pydantic.v1 import BaseModel, Field
+from .shared import BaseSchema
 
 
-class ValidatedAt(BaseModel):
+class ValidatedAt(BaseSchema):
     """Represent validated at information."""
 
-    id: str = Field(alias="id")
-    other: str | None = Field(alias="other")
+    id: str
+    other: str | None
 
 
-class Registration(BaseModel):
+class Registration(BaseSchema):
     """Represent registration information."""
 
-    corroboration_level: str = Field(alias="corroborationLevel")
-    initial_registration_date: datetime = Field(alias="initialRegistrationDate")
-    last_update_date: datetime = Field(alias="lastUpdateDate")
-    managing_lou: str = Field(alias="managingLou")
-    next_renewal_date: datetime = Field(alias="nextRenewalDate")
-    other_validation_authorities: list[Any] = Field(alias="otherValidationAuthorities")
-    status: str = Field(alias="status")
-    validated_as: str = Field(alias="validatedAs")
-    validated_at: ValidatedAt = Field(alias="validatedAt")
+    corroboration_level: str
+    initial_registration_date: datetime
+    last_update_date: datetime
+    managing_lou: str
+    next_renewal_date: datetime
+    other_validation_authorities: list[Any]
+    status: str
+    validated_as: str
+    validated_at: ValidatedAt
 
 
-class GeneralEntity(BaseModel):
+class GeneralEntity(BaseSchema):
     """Represent a general entity ."""
 
-    lei: str | None = Field(alias="lei")
-    name: str | None = Field(alias="name")
+    lei: str | None
+    name: str | None
 
 
-class Address(BaseModel):
+class Address(BaseSchema):
     """Represent address ."""
 
-    language: str = Field(alias="language")
-    address_lines: list[str] = Field(alias="addressLines")
-    address_number: str | None = Field(alias="addressNumber")
-    address_number_within_building: str | None = Field(
-        alias="addressNumberWithinBuilding"
-    )
-    mail_routing: str | None = Field(alias="mailRouting")
-    city: str = Field(alias="city")
-    region: str | None = Field(alias="region")
-    country: str = Field(alias="country")
-    postal_code: str | None = Field(alias="postalCode")
+    language: str
+    address_lines: list[str]
+    address_number: str | None
+    address_number_within_building: str | None
+    mail_routing: str | None
+    city: str
+    region: str | None
+    country: str
+    postal_code: str | None
 
 
-class Expiration(BaseModel):
+class Expiration(BaseSchema):
     """Represent expiration data."""
 
-    date: str | None = Field(alias="date")
-    reason: str | None = Field(alias="reason")
+    date: str | None
+    reason: str | None
 
 
-class LegalForm(BaseModel):
+class LegalForm(BaseSchema):
     """Represent the legal form."""
 
-    id: str | None = Field(alias="id")
-    other: str | None = Field(alias="other")
+    id: str | None
+    other: str | None
 
 
-class Name(BaseModel):
+class Name(BaseSchema):
     """Represent the name."""
 
-    language: str = Field(alias="language")
-    name: str = Field(alias="name")
-    type: str | None = Field(alias="type")
+    language: str
+    name: str
+    type: str | None = None
 
 
-class RegisteredAt(BaseModel):
+class RegisteredAt(BaseSchema):
     """Represent registered at."""
 
-    id: str = Field(alias="id")
-    other: str | None = Field(alias="other")
+    id: str
+    other: str | None
 
 
-class Entity(BaseModel):
+class Entity(BaseSchema):
     """Represent entity information."""
 
-    associated_entity: GeneralEntity = Field(alias="associatedEntity")
-    category: str = Field(alias="category")
-    creation_date: str | None = Field(alias="creationDate")
-    event_groups: list[Any] = Field(alias="eventGroups")
-    expiration: Expiration = Field(alias="expiration")
-    headquarters_address: Address = Field(alias="headquartersAddress")
-    jurisdiction: str = Field(alias="jurisdiction")
-    legal_address: Address = Field(alias="legalAddress")
-    legal_form: LegalForm = Field(alias="legalForm")
-    legal_name: Name = Field(alias="legalName")
-    other_addresses: list[Any] = Field(alias="otherAddresses")
-    other_names: list[Name] = Field(alias="otherNames")
-    registered_as: str = Field(alias="registeredAs")
-    registered_at: RegisteredAt = Field(alias="registeredAt")
-    status: str = Field(alias="status")
-    successor_entities: list[Any] = Field(alias="successorEntities")
-    sub_category: str | None = Field(alias="subCategory")
-    successor_entity: GeneralEntity = Field(alias="successorEntity")
-    transliteraded_other_names: list[Any] = Field(alias="transliteratedOtherNames")
+    associated_entity: GeneralEntity
+    category: str
+    creation_date: str | None
+    event_groups: list[Any]
+    expiration: Expiration
+    headquarters_address: Address
+    jurisdiction: str
+    legal_address: Address
+    legal_form: LegalForm
+    legal_name: Name
+    other_addresses: list[Any]
+    other_names: list[Name]
+    registered_as: str
+    registered_at: RegisteredAt
+    status: str
+    successor_entities: list[Any]
+    sub_category: str | None
+    successor_entity: GeneralEntity
+    transliteraded_other_names: list[Any] | None = None
 
 
-class Attributes(BaseModel):
+class Attributes(BaseSchema):
     """Represent attribute information."""
 
-    bic: list[str] | None = Field(alias="bic")
-    lei: str = Field(alias="lei")
-    entity: Entity = Field(alias="entity")
-    registration: Registration = Field(alias="registration")
+    bic: list[str] | None
+    lei: str
+    entity: Entity
+    registration: Registration
 
 
-class LinkData(BaseModel):
+class LinkData(BaseSchema):
     """Represent a link ."""
 
-    self: str | None = Field(alias="self")
-    related: str | None = Field(alias="related")
-    reporting_exception: str | None = Field(alias="reporting-exception")
+    self: str | None
+    related: str | None = None
+    reporting_exception: str | None = None
 
 
-class Links(BaseModel):
+class Links(BaseSchema):
     """Represent a link ."""
 
-    links: LinkData = Field(alias="links")
+    links: LinkData
 
 
-class Relationships(BaseModel):
+class Relationships(BaseSchema):
     """Represent a relationships ."""
 
-    managing_lou: Links = Field(alias="managing-lou")
-    lei_issuer: Links = Field(alias="lei-issuer")
-    field_modifications: Links = Field(alias="field-modifications")
-    direct_parent: Links = Field(alias="direct-parent")
-    ultimate_parent: Links = Field(alias="ultimate-parent")
+    managing_lou: Links = None
+    lei_issuer: Links = None
+    field_modifications: Links = None
+    direct_parent: Links = None
+    ultimate_parent: Links = None
 
 
-class Data(BaseModel):
+class Data(BaseSchema):
     """Represent data information."""
 
-    id: str = Field(alias="id")
-    type: str = Field(alias="type")
-    attributes: Attributes = Field(alias="attributes")
-    links: LinkData = Field(alias="links")
-    relationships: Relationships = Field(alias="relationships")
+    id: str
+    type: str
+    attributes: Attributes
+    links: LinkData
+    relationships: Relationships
