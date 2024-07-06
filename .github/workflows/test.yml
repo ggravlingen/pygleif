@@ -81,7 +81,13 @@ jobs:
 
       - name: Install requirements
         run: |
-          ./script/bootstrap.sh
+          python -m pip install uv
+
+          uv venv  # Create a virtual environment at .venv.
+
+          source .venv/bin/activate
+
+          uv pip install -e .'[test]'
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
 
   linter:
@@ -116,13 +122,18 @@ jobs:
             needs.info.outputs.python_cache_key }}
       - name: Run ruff (fully)
         run: |
+          source .venv/bin/activate
           pre-commit run --hook-stage manual ruff --all-files --show-diff-on-failure
       - name: Run Black
-        run: black --check --fast --quiet --diff pygleif tests
+        run: |
+          source .venv/bin/activate
+          black --check --fast --quiet --diff pygleif tests
       #     - name: Run mypy
       #       run: mypy pyesef
       - name: Run pylint
-        run: pylint pygleif tests
+        run: |
+          source .venv/bin/activate
+          pylint pygleif tests
 
   pytest:
     name: Run test suite
@@ -158,6 +169,8 @@ jobs:
 
       - name: Run tests
         run: |
+          source .venv/bin/activate
+
           pytest tests/ --timeout=30 --cov pygleif --cov-report xml:coverage.xml
 
       - name: Post coverage
