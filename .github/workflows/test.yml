@@ -120,20 +120,20 @@ jobs:
           key: >-
             ${{ runner.os }}-${{ steps.python.outputs.python-version }}-${{
             needs.info.outputs.python_cache_key }}
-      - name: Run ruff (fully)
+      - name: Run ruff
         run: |
           source .venv/bin/activate
           pre-commit run --hook-stage manual ruff --all-files --show-diff-on-failure
-      - name: Run Black
+        env:
+          RUFF_OUTPUT_FORMAT: github
+      - name: Run ruff-format
         run: |
           source .venv/bin/activate
-          black --check --fast --quiet --diff pygleif tests
+          pre-commit run --hook-stage manual ruff-format --all-files --show-diff-on-failure
+        env:
+          RUFF_OUTPUT_FORMAT: github
       #     - name: Run mypy
       #       run: mypy pyesef
-      - name: Run pylint
-        run: |
-          source .venv/bin/activate
-          pylint pygleif tests
 
   pytest:
     name: Run test suite

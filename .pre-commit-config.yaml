@@ -1,49 +1,30 @@
 ---
 repos:
   - hooks:
-      - args:
-          - "--fix"
-        id: ruff
+      - id: ruff
+        args:
+          - --fix
+      - id: ruff-format
+        files: ^((pygleif|tests|examples)/.+)?[^/]+\.(py|pyi)$
     repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.5.0
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: requirements-txt-fixer
+      - id: check-ast
+      - id: check-executables-have-shebangs
+        stages: [manual]
       - id: check-json
         exclude: (.vscode|.devcontainer)
       - id: no-commit-to-branch
         args:
           - --branch=main
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-      - id: black
-        name: black
-        args:
-          - --safe
-          - --quiet
-        files: ^(pygleif|examples|tests)/.+\.py$
   - repo: local
     hooks:
       - id: pylint
         name: pylint
-        stages: [manual]
-        # DO NOT ACTIVATE until all files have been manually updated.
-        entry: pylint
-        language: system
-        types: [python]
-        files: ^(pygleif|examples|tests)/.+\.py$
-  - repo: local
-    hooks:
-      - id: pytest
-        name: pytest
-        args:
-          - --timeout=30
-          - --cov=pygleif
-          - --cov-report=html
-        stages: [push, manual]
-        entry: pytest
-        language: system
-        types: [python]
-        files: tests
+        entry: script/run-in-env.sh pylint -j 0 --ignore-missing-annotations=y
+        language: script
+        types_or: [python, pyi]
+        files: ^(pygleif|tests)/.+\.(py|pyi)$
