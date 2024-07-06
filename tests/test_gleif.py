@@ -1,28 +1,31 @@
 """Tests."""
 
+from typing import Any
 import pytest
 
 from pygleif import PyGleif
+import json
+from unittest.mock import patch
+from collections.abc import Generator
 
 
-@pytest.fixture(scope="module", name="gleif_fixture_1")
-def data_fixture() -> PyGleif:
-    """Fixture."""
-    return PyGleif("549300MLUDYVRQOOXS22")
+def load_mock_data(file_name: str) -> dict[Any, Any]:
+    """Load mock data from file."""
+    with open(f"tests/fixtures/{file_name}.json") as file:
+        return json.load(file)
 
 
-def test_lei(gleif_fixture_1: PyGleif):
-    """Test LEI attribute."""
-    assert gleif_fixture_1.response.data.attributes.lei, "549300MLUDYVRQOOXS22"
+@pytest.fixture
+def fixture_response_a() -> Generator[Any, Any, Any]:
+    """Mock data for the security service endpoint."""
+    with patch(
+        "pygleif.gleif.load_json",
+    ) as mock_response:
+        mock_response.return_value = load_mock_data("9845001B2AD43E664E58")
+        yield
 
 
-def test_id(gleif_fixture_1: PyGleif):
-    """Test ID attribute."""
-    assert gleif_fixture_1.response.data.id, "549300MLUDYVRQOOXS22"
-
-
-@pytest.mark.parametrize("lei", ["969500NTPM8P4LAT9V13"])
-def test_different_lei(lei: str):
-    """Test various LEI."""
-    PyGleif(lei_code=lei)
-    assert True
+def test_pygleif(fixture_response_a) -> None:
+    """Test Pygleif-class."""
+    data = PyGleif("9845001B2AD43E664E58")
+    assert data.response.data.attributes.lei == "9845001B2AD43E664E58"
