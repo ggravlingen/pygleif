@@ -1,12 +1,5 @@
-"""Example."""
-
-# Hack to allow relative import above top level package
-import os
-import sys
-
-folder = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.normpath(f"{folder}/.."))
-from pygleif import PyGleif  # noqa: E402
+"""Init."""
+from pygleif import PyGleif
 
 for entity in [
     "549300MLUDYVRQOOXS22",
