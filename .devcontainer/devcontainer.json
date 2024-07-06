@@ -2,37 +2,48 @@
 	"name": "Pygleif dev",
 	"context": "..",
 	"dockerFile": "Dockerfile.dev",
-	"postCreateCommand": "script/setup",
+	"postCreateCommand": "script/setup.sh",
 	"containerEnv": {
 		"DEVCONTAINER": "1"
 	},
-	"settings": {
-		"python.pythonPath": "/opt/.venv/bin/python",
-		"python.defaultInterpreterPath": "/opt/.venv/bin/python",
-		"python.terminal.activateEnvInCurrentTerminal": true,
-		"python.formatting.provider": "black",
-		"[python]": {
-			"editor.codeActionsOnSave": {
-				"source.organizeImports": true
-			}
-		},
-		"python.formatting.blackArgs": [
-			"-S",
-			"--line-length",
-			"88"
-		],
-		"python.linting.enabled": true,
-		"editor.formatOnPaste": true,
-		"editor.formatOnSave": true,
-		"editor.formatOnType": true,
-		"files.trimTrailingWhitespace": true,
-		"python.languageServer": "Pylance",
-		"python.testing.unittestEnabled": false,
-		"python.testing.pytestEnabled": true,
-	},
-	"extensions": [
-		"ms-python.vscode-pylance",
-		"visualstudioexptteam.vscodeintellicode",
-		"esbenp.prettier-vscode"
+	"containerUser": "root",
+	"remoteUser": "root",
+	"runArgs": [
+		"-e",
+		"GIT_EDITOR=code --wait"
 	],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"python.pythonPath": "/usr/local/bin/python",
+				"python.languageServer": "Pylance",
+				"python.analysis.extraPaths": [
+					"/workspaces/pygleif"
+				],
+				"[python]": {
+					"editor.formatOnSave": true,
+					"editor.codeActionsOnSave": {
+						"source.fixAll": "explicit",
+						"source.organizeImports": "explicit"
+					},
+					"editor.defaultFormatter": "charliermarsh.ruff",
+					"editor.formatOnPaste": false,
+					"editor.formatOnType": true
+				},
+				"python.testing.pytestEnabled": true,
+				"files.trimTrailingWhitespace": true,
+				"terminal.integrated.profiles.linux": {
+					"zsh": {
+						"path": "/usr/bin/zsh"
+					}
+				},
+				"terminal.integrated.defaultProfile.linux": "zsh"
+			},
+			"extensions": [
+				"ms-python.vscode-pylance",
+				"visualstudioexptteam.vscodeintellicode",
+				"esbenp.prettier-vscode"
+			]
+		}
+	}
 }
