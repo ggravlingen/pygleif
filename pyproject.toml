@@ -1,3 +1,57 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pygleif"
+description = "Query the GLEIF API using Python"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "ggravlingen", email = "no@email.com"},
+]
+dynamic = ['version']
+dependencies    = [
+    "pydantic>=2.0.3",
+]
+keywords = ["lei-code", "lei", "api", "gleif", "leicode"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Intended Audience :: Financial and Insurance Industry",
+]
+
+[project.urls]
+"Source Code" = "https://github.com/ggravlingen/pygleif"
+
+[project.optional-dependencies]
+test = [
+    "black==24.3.0",
+    "coverage==7.4.4",
+    "mypy==1.9.0",
+    "pre-commit==3.7.0",
+    "ruff==0.5.1",
+    "pylint==3.1.0",
+    "pytest==8.1.1",
+    "pytest-cov==5.0.0",
+    "pytest-timeout==2.3.1",
+]
+
+[tool.setuptools]
+include-package-data = true
+platforms = ["any"]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = {file = "pygleif/VERSION"}
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests*"]
+
 [tool.black]
 target-version = ["py310"]
 
@@ -36,7 +90,6 @@ norecursedirs = [
     "testing_config",
 ]
 
-
 [tool.ruff]
 exclude = [
     "tests",
@@ -44,7 +97,7 @@ exclude = [
 
 target-version = "py311"
 
-select = [
+lint.select = [
     "C",  # complexity
     "D",  # docstrings
     "E",  # pycodestyle
@@ -58,7 +111,7 @@ select = [
 # Same as Black.
 line-length = 88
 
-ignore = [# One of these is to be disabled..
+lint.ignore = [# One of these is to be disabled..
           "D213", # See https://github.com/charliermarsh/ruff/issues/2281
           #"D212", # See https://github.com/charliermarsh/ruff/issues/2281
 
@@ -66,13 +119,13 @@ ignore = [# One of these is to be disabled..
           #"D211", # See https://github.com/charliermarsh/ruff/issues/2281
 ]
 
-[tool.ruff.flake8-pytest-style]
+[tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = 'pep257'
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 # will group `import x` and `from x import` of the same module.
 combine-as-imports = true
 force-sort-within-sections = true

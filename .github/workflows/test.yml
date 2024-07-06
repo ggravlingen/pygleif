@@ -2,6 +2,7 @@ name: Code quality tests
 
 env:
   ALL_PYTHON_VERSIONS: "['3.10', '3.11', '3.12']"
+  CACHE_VERSION: 1
 
 on:
   pull_request:
@@ -22,6 +23,7 @@ jobs:
     outputs:
       run_pipeline: ${{ steps.changes.outputs.core }}
       python_versions: ${{ steps.info.outputs.python_versions }}
+      python_cache_key: ${{ steps.generate_python_cache_key.outputs.key }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.1.4
@@ -34,9 +36,13 @@ jobs:
             core:
               - ./**/*.py
               - .github/**/*.yml
-              - requirements.txt
-              - requirements_test.txt
               - pyproject.toml
+
+      - name: Generate partial Python venv restore key
+        id: generate_python_cache_key
+        run: >-
+          echo "key=venv-${{ env.CACHE_VERSION }}-${{
+            hashFiles('pyproject.toml') }}" >> $GITHUB_OUTPUT
 
       - name: Collect additional information
         id: info
@@ -48,7 +54,7 @@ jobs:
     name: Setup environment
     runs-on: ubuntu-latest
     needs: info
-    timeout-minutes: 30
+    timeout-minutes: 10
     if: needs.info.outputs.run_pipeline == 'true'
     strategy:
       matrix:
@@ -58,20 +64,30 @@ jobs:
         uses: actions/checkout@v4.1.4
 
       - name: Set up Python ${{ matrix.python-version }}
+        id: python
         uses: actions/setup-python@v5.1.0
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: syphar/restore-virtualenv@v1.3
-        id: cache-virtualenv
-
-      - uses: syphar/restore-pip-download-cache@v1.2
-        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+      - name: Restore base Python virtual environment
+        id: cache-venv
+        uses: actions/cache@v4.0.2
+        with:
+          path: .venv
+          lookup-only: true
+          key: >-
+            ${{ runner.os }}-${{ steps.python.outputs.python-version }}-${{
+            needs.info.outputs.python_cache_key }}
 
       - name: Install requirements
         run: |
-          pip install -r requirements.txt
-          pip install -r requirements_test.txt
+          python -m pip install uv
+
+          uv venv  # Create a virtual environment at .venv.
+
+          source .venv/bin/activate
+
+          uv pip install -e .'[test]'
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
 
   linter:
@@ -91,20 +107,33 @@ jobs:
         with:
           fetch-depth: "2"
       - name: Set up Python ${{ matrix.python-version }}
+        id: python
         uses: actions/setup-python@v5.1.0
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: syphar/restore-virtualenv@v1.3
-        id: cache-virtualenv
+      - name: Restore full Python ${{ steps.python.outputs.python-version }} virtual environment
+        id: cache-venv
+        uses: actions/cache/restore@v4.0.2
+        with:
+          path: .venv
+          fail-on-cache-miss: true
+          key: >-
+            ${{ runner.os }}-${{ steps.python.outputs.python-version }}-${{
+            needs.info.outputs.python_cache_key }}
       - name: Run ruff (fully)
         run: |
+          source .venv/bin/activate
           pre-commit run --hook-stage manual ruff --all-files --show-diff-on-failure
       - name: Run Black
-        run: black --check --fast --quiet --diff pygleif tests
+        run: |
+          source .venv/bin/activate
+          black --check --fast --quiet --diff pygleif tests
       #     - name: Run mypy
       #       run: mypy pyesef
       - name: Run pylint
-        run: pylint pygleif tests
+        run: |
+          source .venv/bin/activate
+          pylint pygleif tests
 
   pytest:
     name: Run test suite
@@ -123,15 +152,25 @@ jobs:
         uses: actions/checkout@v4.1.4
 
       - name: Set up Python ${{ matrix.python-version }}
+        id: python
         uses: actions/setup-python@v5.1.0
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: syphar/restore-virtualenv@v1.3
-        id: cache-virtualenv
+      - name: Restore full Python ${{ steps.python.outputs.python-version }} virtual environment
+        id: cache-venv
+        uses: actions/cache/restore@v4.0.2
+        with:
+          path: .venv
+          fail-on-cache-miss: true
+          key: >-
+            ${{ runner.os }}-${{ steps.python.outputs.python-version }}-${{
+            needs.info.outputs.python_cache_key }}
 
       - name: Run tests
         run: |
+          source .venv/bin/activate
+
           pytest tests/ --timeout=30 --cov pygleif --cov-report xml:coverage.xml
 
       - name: Post coverage
