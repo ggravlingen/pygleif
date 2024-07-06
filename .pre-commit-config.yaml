@@ -20,11 +20,3 @@ repos:
       - id: no-commit-to-branch
         args:
           - --branch=main
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: script/run-in-env.sh pylint -j 0
-        language: script
-        types_or: [python, pyi]
-        files: ^(pygleif|tests)/.+\.(py|pyi)$
