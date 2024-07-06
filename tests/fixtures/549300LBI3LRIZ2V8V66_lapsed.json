@@ -1,0 +1,142 @@
+{
+    "meta":{
+       "goldenCopy":{
+          "publishDate":"2024-07-06T08:00:00Z"
+       }
+    },
+    "data":{
+       "type":"lei-records",
+       "id":"549300LBI3LRIZ2V8V66",
+       "attributes":{
+          "lei":"549300LBI3LRIZ2V8V66",
+          "entity":{
+             "legalName":{
+                "name":"UK EQUITY FUND (OFFSHORE)",
+                "language":"en"
+             },
+             "otherNames":[
+
+             ],
+             "transliteratedOtherNames":[
+
+             ],
+             "legalAddress":{
+                "language":"en",
+                "addressLines":[
+                   "JP MORGAN HOUSE",
+                   "DUBLIN 1"
+                ],
+                "addressNumber":null,
+                "addressNumberWithinBuilding":null,
+                "mailRouting":null,
+                "city":"DUBLIN",
+                "region":"IE-D",
+                "country":"IE",
+                "postalCode":"D01 W213"
+             },
+             "headquartersAddress":{
+                "language":"en",
+                "addressLines":[
+                   "JP MORGAN HOUSE",
+                   "DUBLIN 1"
+                ],
+                "addressNumber":null,
+                "addressNumberWithinBuilding":null,
+                "mailRouting":null,
+                "city":"DUBLIN",
+                "region":"IE-D",
+                "country":"IE",
+                "postalCode":"D01 W213"
+             },
+             "registeredAt":{
+                "id":"RA999999",
+                "other":null
+             },
+             "registeredAs":null,
+             "jurisdiction":"IE",
+             "category":"FUND",
+             "legalForm":{
+                "id":"8888",
+                "other":"FUND"
+             },
+             "associatedEntity":{
+                "lei":null,
+                "name":null
+             },
+             "status":"ACTIVE",
+             "expiration":{
+                "date":null,
+                "reason":null
+             },
+             "successorEntity":{
+                "lei":null,
+                "name":null
+             },
+             "successorEntities":[
+
+             ],
+             "creationDate":null,
+             "subCategory":null,
+             "otherAddresses":[
+
+             ],
+             "eventGroups":[
+
+             ]
+          },
+          "registration":{
+             "initialRegistrationDate":"2013-11-05T03:03:00Z",
+             "lastUpdateDate":"2023-07-31T17:11:36Z",
+             "status":"LAPSED",
+             "nextRenewalDate":"2014-11-01T10:44:00Z",
+             "managingLou":"213800WAVVOPS85N2205",
+             "corroborationLevel":"ENTITY_SUPPLIED_ONLY",
+             "validatedAt":{
+                "id":"RA999999",
+                "other":null
+             },
+             "validatedAs":null,
+             "otherValidationAuthorities":[
+
+             ]
+          },
+          "bic":null,
+          "mic":null,
+          "ocid":null,
+          "spglobal":[
+             "288226009"
+          ],
+          "conformityFlag":"NON_CONFORMING"
+       },
+       "relationships":{
+          "managing-lou":{
+             "links":{
+                "related":"https:\/\/api.gleif.org\/api\/v1\/lei-records\/549300LBI3LRIZ2V8V66\/managing-lou"
+             }
+          },
+          "lei-issuer":{
+             "links":{
+                "related":"https:\/\/api.gleif.org\/api\/v1\/lei-records\/549300LBI3LRIZ2V8V66\/lei-issuer"
+             }
+          },
+          "field-modifications":{
+             "links":{
+                "related":"https:\/\/api.gleif.org\/api\/v1\/lei-records\/549300LBI3LRIZ2V8V66\/field-modifications"
+             }
+          },
+          "direct-parent":{
+             "links":{
+                "reporting-exception":"https:\/\/api.gleif.org\/api\/v1\/lei-records\/549300LBI3LRIZ2V8V66\/direct-parent-reporting-exception"
+             }
+          },
+          "ultimate-parent":{
+             "links":{
+                "reporting-exception":"https:\/\/api.gleif.org\/api\/v1\/lei-records\/549300LBI3LRIZ2V8V66\/ultimate-parent-reporting-exception"
+             }
+          }
+       },
+       "links":{
+          "self":"https:\/\/api.gleif.org\/api\/v1\/lei-records\/549300LBI3LRIZ2V8V66"
+       }
+    }
+ }

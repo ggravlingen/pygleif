@@ -16,16 +16,25 @@ def load_mock_data(file_name: str) -> dict[Any, Any]:
 
 
 @pytest.fixture
-def fixture_response_a() -> Generator[Any, Any, Any]:
+def fixture_response(request) -> Generator[Any, Any, Any]:
     """Mock data for the security service endpoint."""
     with patch(
         "pygleif.gleif.load_json",
     ) as mock_response:
-        mock_response.return_value = load_mock_data("9845001B2AD43E664E58")
-        yield
+        mock_response.return_value = load_mock_data(request.param)
+        yield request.param
 
 
-def test_pygleif(fixture_response_a) -> None:
+@pytest.mark.parametrize(
+    "fixture_response",
+    [
+        "9845001B2AD43E664E58_issued",
+        "549300LBI3LRIZ2V8V66_lapsed"
+    ],
+    indirect=True,
+)
+def test_pygleif(fixture_response) -> None:
     """Test Pygleif-class."""
-    data = PyGleif("9845001B2AD43E664E58")
-    assert data.response.data.attributes.lei == "9845001B2AD43E664E58"
+    lei = fixture_response.split("_")[0]
+    data = PyGleif(lei)
+    assert data.response.data.attributes.lei == lei

@@ -23,7 +23,7 @@ class Registration(BaseSchema):
     next_renewal_date: datetime
     other_validation_authorities: list[Any]
     status: str
-    validated_as: str
+    validated_as: str | None = None
     validated_at: ValidatedAt
 
 
@@ -92,11 +92,11 @@ class Entity(BaseSchema):
     legal_name: Name
     other_addresses: list[Any]
     other_names: list[Name]
-    registered_as: str
+    registered_as: str | None = None
     registered_at: RegisteredAt
     status: str
     successor_entities: list[Any]
-    sub_category: str | None
+    sub_category: str | None | None = None
     successor_entity: GeneralEntity
     transliteraded_other_names: list[Any] | None = None
 
