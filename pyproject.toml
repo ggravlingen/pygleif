@@ -34,7 +34,6 @@ test = [
     "mypy==1.10.1",
     "pre-commit==3.7.0",
     "ruff==0.5.1",
-    "pylint==3.2.5",
     "pytest==8.2.2",
     "pytest-cov==5.0.0",
     "pytest-timeout==2.3.1",
@@ -50,32 +49,6 @@ version = {file = "pygleif/VERSION"}
 
 [tool.setuptools.packages.find]
 exclude = ["tests", "tests*"]
-
-[tool.pylint.MASTER]
-py-version = "3.11"
-
-[tool.pylint.BASIC]
-class-const-naming-style = "any"
-
-[tool.pylint."MESSAGES CONTROL"]
-extension-pkg-whitelist="pydantic"
-
-[tool.pylint.REPORTS]
-score = false
-
-[tool.pylint.FORMAT]
-expected-line-ending-format = "LF"
-
-[tool.pylint.EXCEPTIONS]
-overgeneral-exceptions = [
-    "builtins.BaseException",
-    "builtins.Exception",
-]
-
-[tool.pylint.TYPING]
-disable = [
-    "too-few-public-methods"
-]
 
 [tool.pytest.ini_options]
 testpaths = [
