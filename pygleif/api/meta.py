@@ -17,7 +17,7 @@ class Pagination(BaseSchema):
     current_page: int
     per_page: int
     _from: int
-    to: int
+    to: int | None = None
     total: int
     last_page: int
 

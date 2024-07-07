@@ -1,9 +1,5 @@
 """Constants."""
 
-URL_API = "https://api.gleif.org/api/v1/lei-records/"
-URL_SEARCH = "https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D="
-
-
 # The ELF codes are unique per country, not globally.
 # Hence the nested dict.
 LEGAL_FORMS = {
