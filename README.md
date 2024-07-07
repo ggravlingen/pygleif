@@ -6,7 +6,10 @@ This library uses Python to query the GLEIF.org's API. Currently, the library su
 
 The library is strictly typed using [`Pydantic`](https://github.com/pydantic/pydantic).
 
-### Example: fetching data for a specific LEI:
+#### Installing the library
+`pip install pygleif`
+
+#### Example: fetching data for a specific LEI:
 
 ```python
 from pygleif import PyGleif
@@ -18,7 +21,7 @@ print(gleif_response.response.data.attributes.entity.legal_name.name)
 # prints UK EQUITY FUND (OFFSHORE)
 ```
 
-### Example: search for a LEI using organisatio number:
+#### Example: search for a LEI using organisatio number:
 
 ```python
 from pygleif import Search
