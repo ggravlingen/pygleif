@@ -21,7 +21,7 @@ def test_search_id(gleif_search_fixture: Search):
     assert gleif_search_fixture.response.data[0].id, "549300MLUDYVRQOOXS22"
 
 
-def test_search_fail():
+def test_search_no_result():
     """Test failing search."""
-    Search("968278304")
-    assert True
+    search = Search("1bcdefghijklmnopqrstuvwxyz")
+    assert search.response.data == []
