@@ -1,19 +1,18 @@
 """Pydantic Representation of models."""
 
-from pydantic import BaseModel
-
 from .data import Data
 from .meta import Meta
+from .shared import BaseSchema
 
 
-class GLEIFResponse(BaseModel):
+class GLEIFResponse(BaseSchema):
     """Represent a base response."""
 
     meta: Meta
     data: Data
 
 
-class SearchResponse(BaseModel):
+class SearchResponse(BaseSchema):
     """Represent search result response."""
 
     meta: Meta
