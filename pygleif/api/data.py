@@ -127,11 +127,11 @@ class Links(BaseSchema):
 class Relationships(BaseSchema):
     """Represent a relationships ."""
 
-    managing_lou: Links = None
-    lei_issuer: Links = None
-    field_modifications: Links = None
-    direct_parent: Links = None
-    ultimate_parent: Links = None
+    managing_lou: Links | None = None
+    lei_issuer: Links | None = None
+    field_modifications: Links | None = None
+    direct_parent: Links | None = None
+    ultimate_parent: Links | None = None
 
 
 class Data(BaseSchema):

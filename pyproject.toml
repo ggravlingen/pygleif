@@ -49,6 +49,9 @@ version = {file = "pygleif/VERSION"}
 [tool.setuptools.packages.find]
 exclude = ["tests", "tests*"]
 
+[tool.setuptools.package-data]
+"pygleif" = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests",
@@ -120,3 +123,8 @@ known-first-party = [
   "pygleif",
   "tests",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = "pydantic.mypy"

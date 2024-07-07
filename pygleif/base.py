@@ -29,7 +29,7 @@ class PyGleifBase(ABC):
     search_string: str
 
     @property
-    def json_response(self) -> list[Any] | dict[Any, Any]:
+    def json_response(self) -> dict[Any, Any]:
         """Return JSON response."""
         full_url = f"{self.BASE_URL}{self.search_string}"
         try:
@@ -37,7 +37,7 @@ class PyGleifBase(ABC):
                 full_url,
                 timeout=self.TIMEOUT_SECOND,
             ) as fdesc:
-                return cast(dict[Any, Any] | list[Any], json.loads(fdesc.read()))
+                return cast(dict[Any, Any], json.loads(fdesc.read()))
         except error.HTTPError as e:
             if e.code == HttpErrorCodes.NOT_FOUND:
                 raise PyGLEIFApiError(f"Resource {full_url} not found")
