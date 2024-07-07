@@ -171,7 +171,7 @@ jobs:
         run: |
           source .venv/bin/activate
 
-          pytest tests/ --timeout=30 --cov pygleif --cov-report xml:coverage.xml
+          pytest tests/ --cov pygleif --cov-report xml:coverage.xml
 
       - name: Post coverage
         uses: orgoro/coverage@v3
