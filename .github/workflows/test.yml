@@ -132,8 +132,10 @@ jobs:
           pre-commit run --hook-stage manual ruff-format --all-files --show-diff-on-failure
         env:
           RUFF_OUTPUT_FORMAT: github
-      #     - name: Run mypy
-      #       run: mypy pyesef
+      - name: Run mypy
+        run: |
+          source .venv/bin/activate
+          pre-commit run --hook-stage manual mypy --all-files --show-diff-on-failure
 
   pytest:
     name: Run test suite

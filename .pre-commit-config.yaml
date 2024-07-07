@@ -20,3 +20,13 @@ repos:
       - id: no-commit-to-branch
         args:
           - --branch=main
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: >
+          ./script/run-in-env.sh mypy --config-file pyproject.toml
+        language: script
+        types: [python]
+        require_serial: true
+        files: ^pygleif/.+\.py$
