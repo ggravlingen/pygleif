@@ -21,7 +21,7 @@ print(gleif_response.response.data.attributes.entity.legal_name.name)
 # prints UK EQUITY FUND (OFFSHORE)
 ```
 
-#### Example: search for a LEI using organisatio number:
+#### Example: search for a LEI using organisation number:
 
 ```python
 from pygleif import Search
