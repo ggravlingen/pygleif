@@ -31,7 +31,7 @@ classifiers = [
 [project.optional-dependencies]
 test = [
     "coverage==7.6.0",
-    "mypy==1.10.1",
+    "mypy==1.11.1",
     "pre-commit==3.8.0",
     "ruff==0.5.5",
     "pytest==8.3.2",
