@@ -37,7 +37,7 @@ class GeneralEntity(BaseSchema):
 class Address(BaseSchema):
     """Represent address ."""
 
-    language: str
+    language: str | None
     address_lines: list[str]
     address_number: str | None
     address_number_within_building: str | None
@@ -65,7 +65,7 @@ class LegalForm(BaseSchema):
 class Name(BaseSchema):
     """Represent the name."""
 
-    language: str
+    language: str | None
     name: str
     type: str | None = None
 
