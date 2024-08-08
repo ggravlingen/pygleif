@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from urllib import parse
+
 from pygleif.api import SearchResponse
 
 from .base import PyGleifBase
@@ -12,7 +14,8 @@ class Search(PyGleifBase):
 
     def __init__(self, orgnr: str) -> None:
         """Init class."""
-        self.search_string = f"?filter[fulltext]={orgnr}"
+        encoded_org_nr = parse.quote(orgnr, safe="")
+        self.search_string = f"?filter[fulltext]={encoded_org_nr}"
 
     @property
     def response(self) -> SearchResponse | None:
