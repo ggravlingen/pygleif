@@ -69,31 +69,7 @@ exclude = [
 target-version = "py311"
 
 lint.select = [
-    "C",  # complexity
-    "C4",  # flake8-comprehensions
-    "D",  # docstrings
-    "E",  # pycodestyle
-    "F",  # pyflakes/autoflake
-    "FA",  # flake8-future-annotations
-    "I",  # isort
-    "ICN001", # import concentions; {name} should be imported as {asname}
-    "PTH",  # flake8-use-pathlib
-    "PLC", # pylint
-    "PLE", # pylint
-    "PLR", # pylint
-    "PLW", # pylint
-    "RUF",  # Ruff-specific rules
-    "RUF100",  # unused-noqa
-    "SIM", # flake8-simplify
-    "SIM117", # Merge with-statements that use the same scope
-    "SIM201", # Use {left} != {right} instead of not {left} == {right}
-    "SIM212", # Use {a} if {a} else {b} instead of {b} if not {a} else {a}
-    "SIM300", # Yoda conditions. Use 'age == 42' instead of '42 == age'.
-    "SIM401", # Use get from dict with default instead of an if block
-    "TCH", # flake8-type-checking
-    "T20",  # flake8-print
-    "UP",  # pyupgrade
-    "W",  # pycodestyle
+    "ALL"
 ]
 
 line-length = 88

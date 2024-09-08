@@ -23,7 +23,6 @@ class HttpErrorCodes(IntEnum):
 class PyGleifBase(ABC):
     """Base class for a GLEIF API request."""
 
-    BASE_URL = "https://api.gleif.org/api/v1/lei-records/"
     TIMEOUT_SECOND = 10  # 10 seconds
 
     search_string: str
@@ -31,22 +30,25 @@ class PyGleifBase(ABC):
     @property
     def json_response(self) -> dict[Any, Any]:
         """Return JSON response."""
-        full_url = f"{self.BASE_URL}{self.search_string}"
         try:
             with request.urlopen(
-                full_url,
+                f"https://api.gleif.org/api/v1/lei-records/{self.search_string}",
                 timeout=self.TIMEOUT_SECOND,
-            ) as fdesc:
-                return cast(dict[Any, Any], json.loads(fdesc.read()))
+            ) as response:
+                return cast(dict[Any, Any], json.loads(response.read()))
         except error.HTTPError as e:
             if e.code == HttpErrorCodes.NOT_FOUND:
-                raise PyGLEIFApiError(f"Resource {full_url} not found")
-            else:
-                raise PyGLEIFApiError(f"HTTP Error encountered: {e.code}")
+                msg = "Resource not found"
+                raise PyGLEIFApiError(msg) from e
+
+            msg = f"HTTP Error encountered: {e.code}"
+            raise PyGLEIFApiError(msg) from e
         except error.URLError as e:
-            raise PyGLEIFApiError(f"URL Error encountered: {e.reason}")
+            msg = f"URL Error encountered: {e.reason}"
+            raise PyGLEIFApiError(msg) from e
         except Exception as e:
-            raise PyGLEIFApiError(f"An unexpected error occurred: {e!s}")
+            msg = f"An unexpected error occurred: {e!s}"
+            raise PyGLEIFApiError(msg) from e
 
     @property
     @abstractmethod

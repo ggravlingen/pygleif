@@ -9,5 +9,5 @@ for entity in [
 ]:
     gleif: PyGleif = PyGleif(entity)
     print(  # noqa: T201
-        gleif.response.data.attributes.registration.initial_registration_date
+        gleif.response.data.attributes.registration.initial_registration_date,
     )
