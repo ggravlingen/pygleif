@@ -3,7 +3,16 @@
 from datetime import datetime
 from typing import Any
 
+from pydantic import Field
+
 from .shared import BaseSchema
+
+DESCRIPTION_VALUES: dict[str, str] = {
+    "lei": (
+        "The LEI code is a 20-character, alpha-numeric code that defines the ISO "
+        "17442 compatible identifier for the legal entity."
+    ),
+}
 
 
 class ValidatedAt(BaseSchema):
@@ -30,7 +39,7 @@ class Registration(BaseSchema):
 class GeneralEntity(BaseSchema):
     """Represent a general entity ."""
 
-    lei: str | None
+    lei: str | None = Field(..., description=DESCRIPTION_VALUES["lei"])
     name: str | None
 
 
@@ -105,7 +114,7 @@ class Attributes(BaseSchema):
     """Represent attribute information."""
 
     bic: list[str] | None
-    lei: str
+    lei: str = Field(..., description=DESCRIPTION_VALUES["lei"])
     entity: Entity
     registration: Registration
 
