@@ -96,7 +96,7 @@ class Entity(BaseSchema):
     registered_at: RegisteredAt
     status: str
     successor_entities: list[Any]
-    sub_category: str | None | None = None
+    sub_category: str | None = None
     successor_entity: GeneralEntity
     transliteraded_other_names: list[Any] | None = None
 
