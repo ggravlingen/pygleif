@@ -7,9 +7,9 @@ repos:
       - id: ruff-format
         files: ^((pygleif|tests|examples)/.+)?[^/]+\.(py|pyi)$
     repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.6.8
+    rev: v0.6.9
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: requirements-txt-fixer
       - id: check-ast
