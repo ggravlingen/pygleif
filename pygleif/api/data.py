@@ -75,7 +75,7 @@ class Name(BaseSchema):
     """Represent the name."""
 
     language: str | None
-    name: str
+    name: str | None
     type: str | None = None
 
 
