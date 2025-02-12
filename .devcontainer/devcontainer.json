@@ -6,16 +6,14 @@
 	"containerEnv": {
 		"DEVCONTAINER": "1"
 	},
-	"containerUser": "root",
 	"remoteUser": "root",
 	"runArgs": [
-		"-e",
-		"GIT_EDITOR=code --wait"
+		"--env",
+		"GIT_EDITOR='code --wait'"
 	],
 	"customizations": {
 		"vscode": {
 			"settings": {
-				"python.pythonPath": "/usr/local/bin/python",
 				"python.languageServer": "Pylance",
 				"python.analysis.extraPaths": [
 					"/workspaces/pygleif"
@@ -40,9 +38,7 @@
 				"terminal.integrated.defaultProfile.linux": "zsh"
 			},
 			"extensions": [
-				"ms-python.vscode-pylance",
-				"visualstudioexptteam.vscodeintellicode",
-				"esbenp.prettier-vscode"
+				"ms-python.vscode-pylance"
 			]
 		}
 	}
