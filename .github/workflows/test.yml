@@ -71,7 +71,7 @@ jobs:
 
       - name: Restore base Python virtual environment
         id: cache-venv
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v4.2.3
         with:
           path: .venv
           lookup-only: true
@@ -113,7 +113,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Restore full Python ${{ steps.python.outputs.python-version }} virtual environment
         id: cache-venv
-        uses: actions/cache/restore@v4.2.2
+        uses: actions/cache/restore@v4.2.3
         with:
           path: .venv
           fail-on-cache-miss: true
@@ -161,7 +161,7 @@ jobs:
 
       - name: Restore full Python ${{ steps.python.outputs.python-version }} virtual environment
         id: cache-venv
-        uses: actions/cache/restore@v4.2.2
+        uses: actions/cache/restore@v4.2.3
         with:
           path: .venv
           fail-on-cache-miss: true
