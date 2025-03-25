@@ -35,7 +35,7 @@ class PyGleifBase(ABC):
                 f"https://api.gleif.org/api/v1/lei-records/{self.search_string}",
                 timeout=self.TIMEOUT_SECOND,
             ) as response:
-                return cast(dict[Any, Any], json.loads(response.read()))
+                return cast("dict[Any, Any]", json.loads(response.read()))
         except error.HTTPError as e:
             if e.code == HttpErrorCodes.NOT_FOUND:
                 msg = "Resource not found"
