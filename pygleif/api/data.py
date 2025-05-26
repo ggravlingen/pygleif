@@ -74,8 +74,8 @@ class LegalForm(BaseSchema):
 class Name(BaseSchema):
     """Represent the name."""
 
-    language: str | None
     name: str | None
+    language: str | None = None
     type: str | None = None
 
 
