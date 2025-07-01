@@ -12,10 +12,10 @@ from .base import PyGleifBase
 class Search(PyGleifBase):
     """Class to use the search form of the GLEIF web site."""
 
-    def __init__(self, orgnr: str) -> None:
+    def __init__(self, search_string: str) -> None:
         """Init class."""
-        encoded_org_nr = parse.quote(orgnr, safe="")
-        self.search_string = f"?filter[fulltext]={encoded_org_nr}"
+        encoded_search_string = parse.quote(search_string, safe="")
+        self.search_string = f"?filter[fulltext]={encoded_search_string}"
 
     @property
     def response(self) -> SearchResponse | None:
