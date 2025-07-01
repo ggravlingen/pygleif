@@ -14,6 +14,7 @@ class SearchType(str, Enum):
     """Enum for search types."""
 
     FULL_TEXT = "fulltext"
+    LEGAL_NAME = "entity.legalName"
 
 
 class Search(PyGleifBase):
@@ -26,9 +27,7 @@ class Search(PyGleifBase):
     ) -> None:
         """Init class."""
         encoded_search_string = parse.quote(search_string, safe="")
-        self.search_string = (
-            f"?filter[{search_type.value.lower()}]={encoded_search_string}"
-        )
+        self.search_string = f"?filter[{search_type.value}]={encoded_search_string}"
 
     @property
     def response(self) -> SearchResponse | None:
