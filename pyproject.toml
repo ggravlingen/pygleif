@@ -30,7 +30,7 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-    "coverage==7.10.1",
+    "coverage==7.10.6",
     "mypy==1.17.1",
     "pre-commit==4.3.0",
     "ruff==0.12.11",
