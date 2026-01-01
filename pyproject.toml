@@ -33,7 +33,7 @@ test = [
     "coverage==7.10.7",
     "mypy==1.18.2",
     "pre-commit==4.3.0",
-    "ruff==0.13.2",
+    "ruff==0.14.10",
     "pytest==8.4.2",
     "pytest-cov==7.0.0",
 ]
