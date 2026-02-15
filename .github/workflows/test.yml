@@ -26,7 +26,7 @@ jobs:
       python_cache_key: ${{ steps.generate_python_cache_key.outputs.key }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v6.0.1
 
       - name: Filter for core changes
         uses: dorny/paths-filter@v3.0.2
@@ -61,17 +61,17 @@ jobs:
         python-version: ${{ fromJSON(needs.info.outputs.python_versions) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v6.0.1
 
       - name: Set up Python ${{ matrix.python-version }}
         id: python
-        uses: actions/setup-python@v6.0.0
+        uses: actions/setup-python@v6.1.0
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Restore base Python virtual environment
         id: cache-venv
-        uses: actions/cache@v4.3.0
+        uses: actions/cache@v5.0.2
         with:
           path: .venv
           lookup-only: true
@@ -103,17 +103,17 @@ jobs:
     if: needs.info.outputs.run_pipeline == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v6.0.1
         with:
           fetch-depth: "2"
       - name: Set up Python ${{ matrix.python-version }}
         id: python
-        uses: actions/setup-python@v6.0.0
+        uses: actions/setup-python@v6.1.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Restore full Python ${{ steps.python.outputs.python-version }} virtual environment
         id: cache-venv
-        uses: actions/cache/restore@v4.3.0
+        uses: actions/cache/restore@v5.0.2
         with:
           path: .venv
           fail-on-cache-miss: true
@@ -151,17 +151,17 @@ jobs:
     if: needs.info.outputs.run_pipeline == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v6.0.1
 
       - name: Set up Python ${{ matrix.python-version }}
         id: python
-        uses: actions/setup-python@v6.0.0
+        uses: actions/setup-python@v6.1.0
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Restore full Python ${{ steps.python.outputs.python-version }} virtual environment
         id: cache-venv
-        uses: actions/cache/restore@v4.3.0
+        uses: actions/cache/restore@v5.0.2
         with:
           path: .venv
           fail-on-cache-miss: true
