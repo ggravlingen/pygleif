@@ -72,5 +72,7 @@
    
       ~SearchType.FULL_TEXT
       ~SearchType.LEGAL_NAME
+      ~SearchType.OWNS
+      ~SearchType.OWNED_BY
    
    

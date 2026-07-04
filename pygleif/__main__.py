@@ -149,10 +149,10 @@ def _cmd_search(client: GleifClient, args: argparse.Namespace) -> str:
 
 
 def _cmd_owners(client: GleifClient, args: argparse.Namespace) -> str:
-    """Handle the ``owners`` command."""
+    """Handle the ``owners`` command via the documented ``owns`` filter."""
     return _dump(
-        client.owners(
-            args.lei,
+        client.search(
+            filters={"owns": args.lei},
             page_number=args.page_number,
             page_size=args.page_size,
         ),
@@ -160,10 +160,10 @@ def _cmd_owners(client: GleifClient, args: argparse.Namespace) -> str:
 
 
 def _cmd_children(client: GleifClient, args: argparse.Namespace) -> str:
-    """Handle the ``children`` command."""
+    """Handle the ``children`` command via the ``ownedBy`` filter."""
     return _dump(
-        client.children(
-            args.lei,
+        client.search(
+            filters={"ownedBy": args.lei},
             page_number=args.page_number,
             page_size=args.page_size,
         ),

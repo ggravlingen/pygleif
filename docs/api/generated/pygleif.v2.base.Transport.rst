@@ -16,8 +16,10 @@
       ~Transport.__init__
       ~Transport.aclose
       ~Transport.aget
+      ~Transport.aget_raw
       ~Transport.close
       ~Transport.get
+      ~Transport.get_raw
    
    
 

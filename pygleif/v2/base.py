@@ -21,6 +21,7 @@ from pygleif.v2.error import (
 )
 
 API_BASE_URL = "https://api.gleif.org/api/v1"
+EXPORT_BASE_URL = "https://api.gleif.org/export/v1"
 
 
 class HttpErrorCodes(IntEnum):
@@ -55,14 +56,22 @@ class Transport:
             self._async_client = httpx.AsyncClient(timeout=self.TIMEOUT_SECOND)
         return self._async_client
 
-    def _build_url(self, path: str, params: dict[str, Any] | None = None) -> str:
+    def _build_url(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        base_url: str | None = None,
+    ) -> str:
         """Compose a full request URL with an encoded query string.
 
         JSON API bracketed keys (e.g. ``filter[lei]`` or ``page[size]``)
         are preserved without percent-encoding the brackets, matching the
-        format the GLEIF API expects.
+        format the GLEIF API expects. ``base_url`` overrides the transport
+        default (used by the ``/export/v1`` endpoints).
         """
-        url = f"{self.base_url}/{path.lstrip('/')}"
+        base = (base_url or self.base_url).rstrip("/")
+        url = f"{base}/{path.lstrip('/')}"
         if not params:
             return url
         # ``safe`` keeps JSON:API bracket syntax intact.
@@ -113,6 +122,51 @@ class Transport:
             msg = f"An unexpected error occurred: {exc!s}"
             raise PyGLEIFApiError(msg) from exc
         return response.json()
+
+    def get_raw(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        base_url: str | None = None,
+    ) -> bytes:
+        """Issue a GET request and return the raw response body.
+
+        Used for non-JSON endpoints such as the ``/export/v1`` file
+        downloads; ``base_url`` overrides the transport default.
+        """
+        url = self._build_url(path, params, base_url=base_url)
+        try:
+            response = self.client.get(url)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise self._map_status_error(exc) from exc
+        except httpx.HTTPError as exc:
+            msg = f"An unexpected error occurred: {exc!s}"
+            raise PyGLEIFApiError(msg) from exc
+        return response.content
+
+    async def aget_raw(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+        *,
+        base_url: str | None = None,
+    ) -> bytes:
+        """Issue an async GET request and return the raw response body.
+
+        Async counterpart of :meth:`get_raw`.
+        """
+        url = self._build_url(path, params, base_url=base_url)
+        try:
+            response = await self.async_client.get(url)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise self._map_status_error(exc) from exc
+        except httpx.HTTPError as exc:
+            msg = f"An unexpected error occurred: {exc!s}"
+            raise PyGLEIFApiError(msg) from exc
+        return response.content
 
     def close(self) -> None:
         """Close the underlying sync client, if one was created."""
