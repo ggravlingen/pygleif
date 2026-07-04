@@ -15,13 +15,15 @@ New code:
 from . import compat, v1, v2
 from .compat.interfaces import BaseApiClient
 from .v1 import PyGleif, Search
-from .v2 import GleifClient
+from .v2 import ExportFormat, GleifClient, SearchType
 
 __all__ = [
     "BaseApiClient",
+    "ExportFormat",
     "GleifClient",
     "PyGleif",
     "Search",
+    "SearchType",
     "compat",
     "v1",
     "v2",

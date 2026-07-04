@@ -24,6 +24,7 @@ docs/_build/
 
 # Unit test / coverage reports
 .coverage
+coverage.xml
 .tox
 *.pytest_cache
 .ty_cache/
