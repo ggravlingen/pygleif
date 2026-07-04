@@ -8,7 +8,7 @@ import json
 from typing import TYPE_CHECKING, Any, cast
 from urllib import error, request
 
-from pygleif.error import PyGLEIFApiError
+from pygleif.v1.error import PyGLEIFApiError
 
 if TYPE_CHECKING:
     from .api import GLEIFResponse, SearchResponse

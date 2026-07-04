@@ -11,7 +11,7 @@ from collections.abc import Generator
 
 def load_mock_data(file_name: str) -> dict[Any, Any]:
     """Load mock data from file."""
-    with open(f"tests/fixtures/{file_name}.json") as file:
+    with open(f"tests/v1/fixtures/{file_name}.json") as file:
         return json.load(file)
 
 
@@ -19,7 +19,7 @@ def load_mock_data(file_name: str) -> dict[Any, Any]:
 def fixture_response(request) -> Generator[Any, Any, Any]:
     """Mock data for the security service endpoint."""
     with patch(
-        "pygleif.base.PyGleifBase.json_response", new_callable=PropertyMock
+        "pygleif.v1.base.PyGleifBase.json_response", new_callable=PropertyMock
     ) as mock_response:
         mock_response.return_value = load_mock_data(request.param)
         yield request.param
