@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import StrEnum
 from urllib import parse
 
-from pygleif.api import SearchResponse
+from pygleif.v1.api import SearchResponse
 
 from .base import PyGleifBase
 

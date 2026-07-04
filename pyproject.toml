@@ -38,6 +38,24 @@ dev = [
     "ruff>=0.13",
     "ty",
 ]
+# Test-matrix groups. pygleif targets pydantic v2 (>2,<3); the frozen v1
+# models construct via the bundled ``pydantic.v1`` shim, so every group
+# installs pydantic v2. The v2/compat suites run fully offline.
+py311-v2 = [
+    "pydantic>2,<3",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+]
+py312-v2 = [
+    "pydantic>2,<3",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+]
+py313-v2 = [
+    "pydantic>2,<3",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+]
 
 [tool.setuptools]
 include-package-data = true

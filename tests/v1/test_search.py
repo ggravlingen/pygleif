@@ -3,7 +3,7 @@
 import pytest
 
 from pygleif import Search
-from pygleif.search import SearchType
+from pygleif.v1.search import SearchType
 
 
 @pytest.fixture(scope="module", name="gleif_search_fixture")

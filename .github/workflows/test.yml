@@ -113,3 +113,34 @@ jobs:
         with:
           coverageFile: coverage.xml
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  pydantic-matrix:
+    name: Run offline v2/compat matrix
+    needs:
+      - info
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: needs.info.outputs.run_pipeline == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(needs.info.outputs.python_versions) }}
+        group:
+          - py311-v2
+          - py312-v2
+          - py313-v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install requirements
+        run: uv sync --group ${{ matrix.group }}
+
+      - name: Run offline v2 and compat suites
+        run: uv run pytest tests/v2 tests/compat
