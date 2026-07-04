@@ -44,3 +44,23 @@ print(response.data[0].attributes.lei)
 
 # prints 213800T8PC8Q4FYJZR07
 ```
+
+#### Async usage
+
+Every `GleifClient` method has an `a`-prefixed async counterpart (e.g.
+`search_fulltext` / `asearch_fulltext`), backed by `httpx`:
+
+```python
+import asyncio
+
+from pygleif import GleifClient
+
+
+async def main() -> None:
+    async with GleifClient() as client:
+        response = await client.aget_lei_record("549300MLUDYVRQOOXS22")
+        print(response.data.attributes.entity.legal_name.name)
+
+
+asyncio.run(main())
+```

@@ -13,6 +13,7 @@ authors = [
 ]
 dynamic = ['version']
 dependencies    = [
+    "httpx>=0.27",
     "pydantic>2,<3",
 ]
 keywords = ["lei-code", "lei", "api", "gleif", "leicode"]

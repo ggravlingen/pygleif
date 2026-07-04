@@ -1,16 +1,18 @@
 """HTTP transport layer for the v2 GLEIF client.
 
-Thin wrapper around the standard library ``urllib`` that builds JSON API
-requests, applies filters and pagination, and maps transport failures to
-the v2 error hierarchy. No third-party HTTP dependency is required.
+Wraps ``httpx`` to build JSON API requests, apply filters and pagination,
+and map transport failures to the v2 error hierarchy. Both synchronous
+(``get``) and asynchronous (``aget``) request paths are supported, backed
+by a lazily-created ``httpx.Client`` / ``httpx.AsyncClient`` pair.
 """
 
 from __future__ import annotations
 
 from enum import IntEnum
-import json
-from typing import Any
-from urllib import error, parse, request
+from typing import Any, Self
+from urllib import parse
+
+import httpx
 
 from pygleif.v2.error import (
     PyGLEIFApiError,
@@ -29,13 +31,29 @@ class HttpErrorCodes(IntEnum):
 
 
 class Transport:
-    """Perform GET requests against the GLEIF JSON API."""
+    """Perform GET requests against the GLEIF JSON API, sync or async."""
 
     TIMEOUT_SECOND = 10
 
     def __init__(self, base_url: str = API_BASE_URL) -> None:
         """Init the transport with a configurable base URL."""
         self.base_url = base_url.rstrip("/")
+        self._client: httpx.Client | None = None
+        self._async_client: httpx.AsyncClient | None = None
+
+    @property
+    def client(self) -> httpx.Client:
+        """Return the lazily-created sync ``httpx.Client``."""
+        if self._client is None:
+            self._client = httpx.Client(timeout=self.TIMEOUT_SECOND)
+        return self._client
+
+    @property
+    def async_client(self) -> httpx.AsyncClient:
+        """Return the lazily-created ``httpx.AsyncClient``."""
+        if self._async_client is None:
+            self._async_client = httpx.AsyncClient(timeout=self.TIMEOUT_SECOND)
+        return self._async_client
 
     def _build_url(self, path: str, params: dict[str, Any] | None = None) -> str:
         """Compose a full request URL with an encoded query string.
@@ -54,24 +72,72 @@ class Transport:
         )
         return f"{url}?{query}" if query else url
 
+    @staticmethod
+    def _map_status_error(exc: httpx.HTTPStatusError) -> PyGLEIFApiError:
+        """Map an ``httpx`` status error to the v2 error hierarchy."""
+        code = exc.response.status_code
+        if code == HttpErrorCodes.NOT_FOUND:
+            return PyGLEIFNotFoundError("Resource not found")
+        if code == HttpErrorCodes.TOO_MANY_REQUESTS:
+            return PyGLEIFRateLimitError(
+                "GLEIF rate limit exceeded (60 requests/minute)",
+            )
+        return PyGLEIFApiError(f"HTTP Error encountered: {code}")
+
     def get(self, path: str, params: dict[str, Any] | None = None) -> dict[Any, Any]:
         """Issue a GET request and return the decoded JSON body."""
         url = self._build_url(path, params)
         try:
-            with request.urlopen(url, timeout=self.TIMEOUT_SECOND) as response:  # noqa: S310 - fixed https base URL
-                return json.loads(response.read())
-        except error.HTTPError as exc:
-            if exc.code == HttpErrorCodes.NOT_FOUND:
-                msg = "Resource not found"
-                raise PyGLEIFNotFoundError(msg) from exc
-            if exc.code == HttpErrorCodes.TOO_MANY_REQUESTS:
-                msg = "GLEIF rate limit exceeded (60 requests/minute)"
-                raise PyGLEIFRateLimitError(msg) from exc
-            msg = f"HTTP Error encountered: {exc.code}"
-            raise PyGLEIFApiError(msg) from exc
-        except error.URLError as exc:
-            msg = f"URL Error encountered: {exc.reason}"
-            raise PyGLEIFApiError(msg) from exc
-        except Exception as exc:
+            response = self.client.get(url)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise self._map_status_error(exc) from exc
+        except httpx.HTTPError as exc:
             msg = f"An unexpected error occurred: {exc!s}"
             raise PyGLEIFApiError(msg) from exc
+        return response.json()
+
+    async def aget(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+    ) -> dict[Any, Any]:
+        """Issue an async GET request and return the decoded JSON body."""
+        url = self._build_url(path, params)
+        try:
+            response = await self.async_client.get(url)
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise self._map_status_error(exc) from exc
+        except httpx.HTTPError as exc:
+            msg = f"An unexpected error occurred: {exc!s}"
+            raise PyGLEIFApiError(msg) from exc
+        return response.json()
+
+    def close(self) -> None:
+        """Close the underlying sync client, if one was created."""
+        if self._client is not None:
+            self._client.close()
+            self._client = None
+
+    async def aclose(self) -> None:
+        """Close the underlying async client, if one was created."""
+        if self._async_client is not None:
+            await self._async_client.aclose()
+            self._async_client = None
+
+    def __enter__(self) -> Self:
+        """Enter the sync context manager."""
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        """Close the sync client on context exit."""
+        self.close()
+
+    async def __aenter__(self) -> Self:
+        """Enter the async context manager."""
+        return self
+
+    async def __aexit__(self, *exc_info: object) -> None:
+        """Close the async client on context exit."""
+        await self.aclose()

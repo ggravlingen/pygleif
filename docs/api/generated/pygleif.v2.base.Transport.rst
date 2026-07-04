@@ -14,6 +14,9 @@
    .. autosummary::
    
       ~Transport.__init__
+      ~Transport.aclose
+      ~Transport.aget
+      ~Transport.close
       ~Transport.get
    
    
@@ -25,5 +28,7 @@
    .. autosummary::
    
       ~Transport.TIMEOUT_SECOND
+      ~Transport.async_client
+      ~Transport.client
    
    

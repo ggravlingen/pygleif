@@ -9,6 +9,12 @@ from pygleif import GleifClient
 client = GleifClient()
 ```
 
+Every method has an async counterpart prefixed with `a` (e.g. `search` /
+`asearch`, `get_lei` / `aget_lei`, `fields` / `afields`). Both share the same
+[`httpx`](https://www.python-httpx.org/)-based
+{class}`~pygleif.v2.base.Transport`, so you can freely mix sync and async
+usage against the same client. See "Async usage" below.
+
 ## Fetching a single LEI record
 
 ```python
@@ -81,6 +87,39 @@ client.fields()                           # technical metadata about API fields
 ```python
 if not client.healthcheck():
     ...  # API is unreachable
+```
+
+## Async usage
+
+Every method described above has an `a`-prefixed async counterpart that
+takes the same arguments and returns the same response model:
+
+```python
+import asyncio
+
+from pygleif import GleifClient
+
+
+async def main() -> None:
+    async with GleifClient() as client:
+        record = await client.aget_lei("549300MLUDYVRQOOXS22")
+        results = await client.asearch_fulltext("Deutsche Bank")
+        print(record.legal_name, len(results.data))
+
+
+asyncio.run(main())
+```
+
+Using `async with` (or `with` for sync-only code) ensures the underlying
+`httpx` connection pool is closed when you're done. Without a context
+manager, call `client.close()` or `await client.aclose()` explicitly:
+
+```python
+client = GleifClient()
+try:
+    client.search_fulltext("Deutsche Bank")
+finally:
+    client.close()
 ```
 
 ## Error handling
