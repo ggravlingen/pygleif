@@ -1,10 +1,15 @@
 [![PyPI version](https://badge.fury.io/py/pygleif.svg)](https://badge.fury.io/py/pygleif)
 
-This library uses Python to query the GLEIF.org's API. Currently, the library supports:
-- Fetching data for a specific API
-- Searching for a LEI using an organisation number
+This library uses Python to query the GLEIF.org's API.
 
-The library is strictly typed using [`Pydantic`](https://github.com/pydantic/pydantic).
+#### Documentation
+
+Full documentation, including the complete API reference, is available at
+[pygleif.readthedocs.io](https://pygleif.readthedocs.io/).
+
+> [!NOTE]
+> `pygleif.v1` (`PyGleif`, `Search`) is deprecated. New code should use
+> `pygleif.v2` (`GleifClient`), shown below.
 
 #### Installing the library
 `pip install pygleif`
@@ -12,21 +17,23 @@ The library is strictly typed using [`Pydantic`](https://github.com/pydantic/pyd
 #### Example: fetching data for a specific LEI:
 
 ```python
-from pygleif import PyGleif
+from pygleif import GleifClient
 
-gleif_response = PyGleif("549300MLUDYVRQOOXS22")
+client = GleifClient()
+response = client.get_lei_record("549300MLUDYVRQOOXS22")
 
 # Print the name of the company with the LEI above
-print(gleif_response.response.data.attributes.entity.legal_name.name)
+print(response.data.attributes.entity.legal_name.name)
 # prints UK EQUITY FUND (OFFSHORE)
 ```
 
 #### Example: search for a LEI using organisation number:
 
 ```python
-from pygleif import Search
+from pygleif import GleifClient
 
-gleif_response = Search("5560142720")
+client = GleifClient()
+response = client.search_fulltext("5560142720")
 
 # Print the LEI of the company with the LEI above
 print(response.data[0].attributes.lei)
