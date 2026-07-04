@@ -22,20 +22,21 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Intended Audience :: Financial and Insurance Industry",
 ]
 
 [project.urls]
 "Source Code" = "https://github.com/ggravlingen/pygleif"
 
-[project.optional-dependencies]
-test = [
-    "coverage==7.10.7",
-    "mypy==1.18.2",
-    "pre-commit==4.3.0",
-    "ruff==0.13.2",
-    "pytest==8.4.2",
-    "pytest-cov==7.0.0",
+[dependency-groups]
+dev = [
+    "coverage>=7.10",
+    "pre-commit>=4.3",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+    "ruff>=0.13",
+    "ty",
 ]
 
 [tool.setuptools]
@@ -100,7 +101,5 @@ known-first-party = [
   "tests",
 ]
 
-[tool.mypy]
-python_version = "3.11"
-strict = true
-plugins = "pydantic.mypy"
+[tool.ty.environment]
+python-version = "3.11"

@@ -1,9 +1,9 @@
-FROM mcr.microsoft.com/vscode/devcontainers/python:3.11-bullseye
+FROM mcr.microsoft.com/vscode/devcontainers/python:3.13-bullseye
 LABEL author="NCR"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN pip install pip setuptools wheel cython
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 ENV FILE_LOCATION "/usr/src/app"
 

@@ -15,6 +15,7 @@ venv
 
 # Folders
 dist/
+build/
 
 # Python setuptools
 .cache
@@ -24,6 +25,7 @@ dist/
 .coverage
 .tox
 *.pytest_cache
+.ty_cache/
 
 # Emacs backup files
 *~

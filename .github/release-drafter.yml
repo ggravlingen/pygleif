@@ -1,8 +1,55 @@
 categories:
+  - title: "🚀 Features"
+    labels:
+      - "feature"
+      - "enhancement"
+  - title: "🐛 Bug Fixes"
+    labels:
+      - "fix"
+      - "bugfix"
+      - "bug"
+  - title: "🧰 Maintenance"
+    labels:
+      - "chore"
+      - "maintenance"
+      - "refactor"
   - title: "⬆️ Dependencies"
     collapse-after: 1
     labels:
       - "dependencies"
+  - title: "📝 Documentation"
+    labels:
+      - "documentation"
+
+autolabeler:
+  - label: "feature"
+    branch:
+      - '/^feature\/.+/'
+      - '/^feat\/.+/'
+    title:
+      - '/^feat(\(.+\))?:/i'
+  - label: "fix"
+    branch:
+      - '/^fix\/.+/'
+    title:
+      - '/^fix(\(.+\))?:/i'
+  - label: "chore"
+    branch:
+      - '/^chore\/.+/'
+    title:
+      - '/^chore(\(.+\))?:/i'
+  - label: "documentation"
+    branch:
+      - '/^docs?\/.+/'
+    title:
+      - '/^docs?(\(.+\))?:/i'
+  - label: "dependencies"
+    title:
+      - '/^(chore\()?deps?(\))?:/i'
+
 template: |
   ## What's Changed
   $CHANGES
+
+  ## Contributors
+  $CONTRIBUTORS

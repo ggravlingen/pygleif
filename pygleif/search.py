@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from urllib import parse
 
 from pygleif.api import SearchResponse
@@ -10,7 +10,7 @@ from pygleif.api import SearchResponse
 from .base import PyGleifBase
 
 
-class SearchType(str, Enum):
+class SearchType(StrEnum):
     """Enum for search types."""
 
     FULL_TEXT = "fulltext"

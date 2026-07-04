@@ -6,6 +6,6 @@ set -e
 
 cd "$(dirname "$0")/../"
 
-script/bootstrap.sh
+make sync
 
-pre-commit install
+uv run pre-commit install

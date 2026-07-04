@@ -22,10 +22,10 @@ repos:
           - --branch=main
   - repo: local
     hooks:
-      - id: mypy
-        name: mypy
+      - id: ty
+        name: ty
         entry: >
-          ./script/run-in-env.sh mypy --config-file pyproject.toml
+          ./.devcontainer/run-in-env.sh ty check
         language: script
         types: [python]
         require_serial: true
