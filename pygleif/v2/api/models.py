@@ -28,7 +28,7 @@ API serves in kebab-case (e.g. ``managing-lou``) carry explicit aliases.
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TC003 - needed at runtime by pydantic
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from pygleif.v2.pydantic_shim import BaseModel, ConfigDict, Field, to_camel
 
@@ -373,10 +373,7 @@ class FieldResponse(BaseSchema):
 # ---------------------------------------------------------------------------
 # Generic JSON:API envelopes for typed resources
 # ---------------------------------------------------------------------------
-AttributesT = TypeVar("AttributesT", bound=BaseSchema)
-
-
-class ResourceData(BaseSchema, Generic[AttributesT]):
+class ResourceData[AttributesT: BaseSchema](BaseSchema):
     """A JSON:API data object with resource-specific typed attributes."""
 
     type: str
@@ -385,14 +382,14 @@ class ResourceData(BaseSchema, Generic[AttributesT]):
     links: LinkData | None = None
 
 
-class ResourceResponse(BaseSchema, Generic[AttributesT]):
+class ResourceResponse[AttributesT: BaseSchema](BaseSchema):
     """Single-resource response envelope."""
 
     meta: Meta | None = None
     data: ResourceData[AttributesT]
 
 
-class ResourceListResponse(BaseSchema, Generic[AttributesT]):
+class ResourceListResponse[AttributesT: BaseSchema](BaseSchema):
     """Resource list response envelope."""
 
     meta: Meta | None = None
