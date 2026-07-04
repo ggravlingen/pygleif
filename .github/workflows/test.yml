@@ -1,7 +1,7 @@
 name: Code quality tests
 
 env:
-  ALL_PYTHON_VERSIONS: "['3.12', '3.13', '3.14']"
+  ALL_PYTHON_VERSIONS: "['3.13', '3.14']"
 
 on:
   pull_request:
@@ -128,7 +128,6 @@ jobs:
       matrix:
         python-version: ${{ fromJSON(needs.info.outputs.python_versions) }}
         group:
-          - py312-v2
           - py313-v2
           - py314-v2
     steps:
