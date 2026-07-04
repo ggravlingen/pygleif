@@ -1,0 +1,30 @@
+# This workflow uploads a Python Package to PyPI when a release is created,
+# using OIDC trusted publishing (no stored credentials).
+# For more information see: https://docs.pypi.org/trusted-publishers/
+
+name: Upload Python Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      # Required for OIDC trusted publishing to PyPI
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.x"
+
+      - name: Build package
+        run: uv build
+
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always
