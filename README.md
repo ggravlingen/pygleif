@@ -14,6 +14,10 @@ Full documentation, including the complete API reference, is available at
 #### Installing the library
 `pip install pygleif`
 
+To install the latest in-development version from `main` (may be ahead of the
+last PyPI release):
+`pip install git+https://github.com/ggravlingen/pygleif.git@main`
+
 #### Example: fetching data for a specific LEI:
 
 ```python

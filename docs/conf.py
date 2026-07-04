@@ -9,7 +9,7 @@ release = version_file.read_text().strip()
 version = release
 
 project = "pygleif"
-copyright = "2022, Patrik"  # noqa: A001
+copyright = "2026, Patrik"  # noqa: A001
 author = "Patrik"
 
 extensions = [
