@@ -16,6 +16,13 @@ This documentation covers the **v2** API (`pygleif.v2.GleifClient`). The legacy
 pip install pygleif
 ```
 
+To install the latest in-development version from `main` (may be ahead of the
+last PyPI release):
+
+```
+pip install git+https://github.com/ggravlingen/pygleif.git@main
+```
+
 ```{toctree}
 :maxdepth: 2
 :hidden:
