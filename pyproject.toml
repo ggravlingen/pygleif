@@ -56,6 +56,11 @@ py313-v2 = [
     "pytest>=8.4",
     "pytest-cov>=7.0",
 ]
+docs = [
+    "furo>=2024.8",
+    "myst-parser>=4.0",
+    "sphinx>=8.0",
+]
 
 [tool.setuptools]
 include-package-data = true
@@ -83,6 +88,7 @@ norecursedirs = [
 [tool.ruff]
 exclude = [
     "tests",
+    "docs",
 ]
 
 target-version = "py311"

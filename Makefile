@@ -1,4 +1,4 @@
-.PHONY: sync lint format typecheck test coverage build clean
+.PHONY: sync lint format typecheck test coverage build clean docs docs-clean
 
 sync:
 	uv sync --all-groups
@@ -23,3 +23,10 @@ build:
 
 clean:
 	rm -rf dist build *.egg-info .pytest_cache .ruff_cache .ty_cache .coverage coverage.xml
+
+docs:
+	uv sync --group docs
+	uv run sphinx-build -b html docs docs/_build/html
+
+docs-clean:
+	rm -rf docs/_build

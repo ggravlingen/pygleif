@@ -36,6 +36,8 @@ jobs:
               - .github/**/*.yml
               - pyproject.toml
               - uv.lock
+              - docs/**
+              - .readthedocs.yaml
 
       - name: Collect additional information
         id: info
@@ -144,3 +146,26 @@ jobs:
 
       - name: Run offline v2 and compat suites
         run: uv run pytest tests/v2 tests/compat
+
+  docs:
+    name: Build documentation
+    needs:
+      - info
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: needs.info.outputs.run_pipeline == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install requirements
+        run: uv sync --group docs
+
+      - name: Build Sphinx docs (warnings as errors)
+        run: uv run sphinx-build -b html -W docs docs/_build/html

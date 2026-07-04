@@ -16,6 +16,7 @@ venv
 # Folders
 dist/
 build/
+docs/_build/
 
 # Python setuptools
 .cache
