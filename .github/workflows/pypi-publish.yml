@@ -8,6 +8,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g. 2026.7.2)"
+        required: true
+        type: string
 
 jobs:
   deploy:
