@@ -28,7 +28,10 @@ def test_search_no_result():
     search = Search("1bcdefghijklmnopqrstuvwxyz")
     assert search.response.data == []
 
-def test_search_no_result():
+
+def test_search_legal_name_match():
     """Test matching search."""
-    search = Search("Sparbanken Rekarne", search_type=SearchType.LEGAL_NAME)
+    search = Search(
+        "Sparbanken Mälardalen AB (publ)", search_type=SearchType.LEGAL_NAME
+    )
     assert len(search.response.data) == 1
