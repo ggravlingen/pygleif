@@ -31,3 +31,6 @@ coverage.xml
 
 # Emacs backup files
 *~
+
+# Mac
+.DS_Store
