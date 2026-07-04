@@ -1,7 +1,7 @@
 name: Code quality tests
 
 env:
-  ALL_PYTHON_VERSIONS: "['3.11', '3.12', '3.13']"
+  ALL_PYTHON_VERSIONS: "['3.13', '3.14']"
 
 on:
   pull_request:
@@ -128,9 +128,8 @@ jobs:
       matrix:
         python-version: ${{ fromJSON(needs.info.outputs.python_versions) }}
         group:
-          - py311-v2
-          - py312-v2
           - py313-v2
+          - py314-v2
     steps:
       - name: Checkout code
         uses: actions/checkout@v5.0.0

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "pygleif"
 description = "Query the GLEIF API using Python"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 license = {text = "MIT"}
 authors = [
     {name = "ggravlingen", email = "no@email.com"},
@@ -21,9 +21,8 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Intended Audience :: Financial and Insurance Industry",
 ]
 
@@ -42,17 +41,12 @@ dev = [
 # Test-matrix groups. pygleif targets pydantic v2 (>2,<3); the frozen v1
 # models construct via the bundled ``pydantic.v1`` shim, so every group
 # installs pydantic v2. The v2/compat suites run fully offline.
-py311-v2 = [
-    "pydantic>2,<3",
-    "pytest>=8.4",
-    "pytest-cov>=7.0",
-]
-py312-v2 = [
-    "pydantic>2,<3",
-    "pytest>=8.4",
-    "pytest-cov>=7.0",
-]
 py313-v2 = [
+    "pydantic>2,<3",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+]
+py314-v2 = [
     "pydantic>2,<3",
     "pytest>=8.4",
     "pytest-cov>=7.0",
@@ -92,7 +86,7 @@ exclude = [
     "docs",
 ]
 
-target-version = "py311"
+target-version = "py313"
 
 lint.select = [
     "ALL"
@@ -127,4 +121,4 @@ known-first-party = [
 ]
 
 [tool.ty.environment]
-python-version = "3.11"
+python-version = "3.13"
