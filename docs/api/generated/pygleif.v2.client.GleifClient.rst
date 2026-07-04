@@ -13,7 +13,37 @@
 
    .. autosummary::
    
+      ~GleifClient.__aenter__
+      ~GleifClient.__aexit__
+      ~GleifClient.__delattr__
+      ~GleifClient.__dir__
+      ~GleifClient.__enter__
+      ~GleifClient.__eq__
+      ~GleifClient.__exit__
+      ~GleifClient.__format__
+      ~GleifClient.__ge__
+      ~GleifClient.__getattribute__
+      ~GleifClient.__getstate__
+      ~GleifClient.__gt__
+      ~GleifClient.__hash__
       ~GleifClient.__init__
+      ~GleifClient.__init_subclass__
+      ~GleifClient.__le__
+      ~GleifClient.__lt__
+      ~GleifClient.__ne__
+      ~GleifClient.__new__
+      ~GleifClient.__reduce__
+      ~GleifClient.__reduce_ex__
+      ~GleifClient.__repr__
+      ~GleifClient.__setattr__
+      ~GleifClient.__sizeof__
+      ~GleifClient.__str__
+      ~GleifClient.__subclasshook__
+      ~GleifClient._field_modification_params
+      ~GleifClient._filter_params
+      ~GleifClient._lei_to_record
+      ~GleifClient._page_params
+      ~GleifClient._search_params
       ~GleifClient.aassociated_entity
       ~GleifClient.aautocompletions
       ~GleifClient.aby_bic
@@ -114,5 +144,17 @@
    
 
    
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~GleifClient.__annotations__
+      ~GleifClient.__dict__
+      ~GleifClient.__doc__
+      ~GleifClient.__firstlineno__
+      ~GleifClient.__module__
+      ~GleifClient.__static_attributes__
+      ~GleifClient.__weakref__
    
    

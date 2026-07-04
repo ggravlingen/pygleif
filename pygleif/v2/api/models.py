@@ -449,9 +449,16 @@ class RelationshipAttributes(BaseSchema):
     registration: RelationshipRegistration | None = None
 
 
-RelationshipData = ResourceData[RelationshipAttributes]
-RelationshipResponse = ResourceResponse[RelationshipAttributes]
-RelationshipListResponse = ResourceListResponse[RelationshipAttributes]
+class RelationshipData(ResourceData[RelationshipAttributes]):
+    """A single relationship record."""
+
+
+class RelationshipResponse(ResourceResponse[RelationshipAttributes]):
+    """Single relationship record response."""
+
+
+class RelationshipListResponse(ResourceListResponse[RelationshipAttributes]):
+    """Relationship record list response."""
 
 
 # ---------------------------------------------------------------------------
@@ -468,8 +475,12 @@ class ReportingExceptionAttributes(BaseSchema):
     reference: str | None = None
 
 
-ReportingExceptionData = ResourceData[ReportingExceptionAttributes]
-ReportingExceptionResponse = ResourceResponse[ReportingExceptionAttributes]
+class ReportingExceptionData(ResourceData[ReportingExceptionAttributes]):
+    """A single reporting exception record."""
+
+
+class ReportingExceptionResponse(ResourceResponse[ReportingExceptionAttributes]):
+    """Reporting exception response."""
 
 
 # ---------------------------------------------------------------------------
@@ -488,8 +499,12 @@ class FieldModificationAttributes(BaseSchema):
     context: Any = None
 
 
-FieldModificationData = ResourceData[FieldModificationAttributes]
-FieldModificationResponse = ResourceListResponse[FieldModificationAttributes]
+class FieldModificationData(ResourceData[FieldModificationAttributes]):
+    """A single field modification record."""
+
+
+class FieldModificationResponse(ResourceListResponse[FieldModificationAttributes]):
+    """Field modification list response."""
 
 
 # ---------------------------------------------------------------------------
@@ -509,9 +524,16 @@ class LeiIssuerAttributes(BaseSchema):
     accreditation_date: str | None = None
 
 
-LeiIssuerData = ResourceData[LeiIssuerAttributes]
-LeiIssuerResponse = ResourceResponse[LeiIssuerAttributes]
-LeiIssuersResponse = ResourceListResponse[LeiIssuerAttributes]
+class LeiIssuerData(ResourceData[LeiIssuerAttributes]):
+    """A single LEI issuer record."""
+
+
+class LeiIssuerResponse(ResourceResponse[LeiIssuerAttributes]):
+    """Single LEI issuer response."""
+
+
+class LeiIssuersResponse(ResourceListResponse[LeiIssuerAttributes]):
+    """LEI issuer list response."""
 
 
 class LeiIssuerJurisdictionAttributes(BaseSchema):
@@ -523,7 +545,10 @@ class LeiIssuerJurisdictionAttributes(BaseSchema):
     end_date: str | None = None
 
 
-LeiIssuerJurisdictionsResponse = ResourceListResponse[LeiIssuerJurisdictionAttributes]
+class LeiIssuerJurisdictionsResponse(
+    ResourceListResponse[LeiIssuerJurisdictionAttributes],
+):
+    """LEI issuer accredited jurisdiction list response."""
 
 
 class VLeiIssuerAttributes(BaseSchema):
@@ -536,9 +561,16 @@ class VLeiIssuerAttributes(BaseSchema):
     qualification_date: str | None = None
 
 
-VLeiIssuerData = ResourceData[VLeiIssuerAttributes]
-VLeiIssuerResponse = ResourceResponse[VLeiIssuerAttributes]
-VLeiIssuersResponse = ResourceListResponse[VLeiIssuerAttributes]
+class VLeiIssuerData(ResourceData[VLeiIssuerAttributes]):
+    """A single vLEI issuer record."""
+
+
+class VLeiIssuerResponse(ResourceResponse[VLeiIssuerAttributes]):
+    """Single vLEI issuer response."""
+
+
+class VLeiIssuersResponse(ResourceListResponse[VLeiIssuerAttributes]):
+    """vLEI issuer list response."""
 
 
 # ---------------------------------------------------------------------------
@@ -551,9 +583,16 @@ class CountryAttributes(BaseSchema):
     name: str | None = None
 
 
-CountryData = ResourceData[CountryAttributes]
-CountryResponse = ResourceResponse[CountryAttributes]
-CountriesResponse = ResourceListResponse[CountryAttributes]
+class CountryData(ResourceData[CountryAttributes]):
+    """A single country record."""
+
+
+class CountryResponse(ResourceResponse[CountryAttributes]):
+    """Single country response."""
+
+
+class CountriesResponse(ResourceListResponse[CountryAttributes]):
+    """Country list response."""
 
 
 class JurisdictionAttributes(BaseSchema):
@@ -563,9 +602,16 @@ class JurisdictionAttributes(BaseSchema):
     name: str | None = None
 
 
-JurisdictionData = ResourceData[JurisdictionAttributes]
-JurisdictionResponse = ResourceResponse[JurisdictionAttributes]
-JurisdictionsResponse = ResourceListResponse[JurisdictionAttributes]
+class JurisdictionData(ResourceData[JurisdictionAttributes]):
+    """A single jurisdiction record."""
+
+
+class JurisdictionResponse(ResourceResponse[JurisdictionAttributes]):
+    """Single jurisdiction response."""
+
+
+class JurisdictionsResponse(ResourceListResponse[JurisdictionAttributes]):
+    """Jurisdiction list response."""
 
 
 class RegionAttributes(BaseSchema):
@@ -575,9 +621,16 @@ class RegionAttributes(BaseSchema):
     name: str | None = None
 
 
-RegionData = ResourceData[RegionAttributes]
-RegionResponse = ResourceResponse[RegionAttributes]
-RegionsResponse = ResourceListResponse[RegionAttributes]
+class RegionData(ResourceData[RegionAttributes]):
+    """A single region record."""
+
+
+class RegionResponse(ResourceResponse[RegionAttributes]):
+    """Single region response."""
+
+
+class RegionsResponse(ResourceListResponse[RegionAttributes]):
+    """Region list response."""
 
 
 class LocalizedName(BaseSchema):
@@ -603,9 +656,16 @@ class EntityLegalFormAttributes(BaseSchema):
     names: list[LocalizedName] = Field(default_factory=list)
 
 
-EntityLegalFormData = ResourceData[EntityLegalFormAttributes]
-EntityLegalFormResponse = ResourceResponse[EntityLegalFormAttributes]
-EntityLegalFormsResponse = ResourceListResponse[EntityLegalFormAttributes]
+class EntityLegalFormData(ResourceData[EntityLegalFormAttributes]):
+    """A single entity legal form record."""
+
+
+class EntityLegalFormResponse(ResourceResponse[EntityLegalFormAttributes]):
+    """Single entity legal form response."""
+
+
+class EntityLegalFormsResponse(ResourceListResponse[EntityLegalFormAttributes]):
+    """Entity legal form list response."""
 
 
 class OfficialOrganizationalRoleAttributes(BaseSchema):
@@ -622,13 +682,22 @@ class OfficialOrganizationalRoleAttributes(BaseSchema):
     names: list[LocalizedName] = Field(default_factory=list)
 
 
-OfficialOrganizationalRoleData = ResourceData[OfficialOrganizationalRoleAttributes]
-OfficialOrganizationalRoleResponse = ResourceResponse[
-    OfficialOrganizationalRoleAttributes
-]
-OfficialOrganizationalRolesResponse = ResourceListResponse[
-    OfficialOrganizationalRoleAttributes
-]
+class OfficialOrganizationalRoleData(
+    ResourceData[OfficialOrganizationalRoleAttributes],
+):
+    """A single official organizational role record."""
+
+
+class OfficialOrganizationalRoleResponse(
+    ResourceResponse[OfficialOrganizationalRoleAttributes],
+):
+    """Single official organizational role response."""
+
+
+class OfficialOrganizationalRolesResponse(
+    ResourceListResponse[OfficialOrganizationalRoleAttributes],
+):
+    """Official organizational role list response."""
 
 
 class RegistrationAuthorityJurisdiction(BaseSchema):
@@ -653,9 +722,20 @@ class RegistrationAuthorityAttributes(BaseSchema):
     )
 
 
-RegistrationAuthorityData = ResourceData[RegistrationAuthorityAttributes]
-RegistrationAuthorityResponse = ResourceResponse[RegistrationAuthorityAttributes]
-RegistrationAuthoritiesResponse = ResourceListResponse[RegistrationAuthorityAttributes]
+class RegistrationAuthorityData(ResourceData[RegistrationAuthorityAttributes]):
+    """A single registration authority record."""
+
+
+class RegistrationAuthorityResponse(
+    ResourceResponse[RegistrationAuthorityAttributes],
+):
+    """Single registration authority response."""
+
+
+class RegistrationAuthoritiesResponse(
+    ResourceListResponse[RegistrationAuthorityAttributes],
+):
+    """Registration authority list response."""
 
 
 class RegistrationAgentAttributes(BaseSchema):
@@ -667,6 +747,13 @@ class RegistrationAgentAttributes(BaseSchema):
     websites: list[str] = Field(default_factory=list)
 
 
-RegistrationAgentData = ResourceData[RegistrationAgentAttributes]
-RegistrationAgentResponse = ResourceResponse[RegistrationAgentAttributes]
-RegistrationAgentsResponse = ResourceListResponse[RegistrationAgentAttributes]
+class RegistrationAgentData(ResourceData[RegistrationAgentAttributes]):
+    """A single registration agent record."""
+
+
+class RegistrationAgentResponse(ResourceResponse[RegistrationAgentAttributes]):
+    """Single registration agent response."""
+
+
+class RegistrationAgentsResponse(ResourceListResponse[RegistrationAgentAttributes]):
+    """Registration agent list response."""

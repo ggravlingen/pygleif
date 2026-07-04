@@ -13,7 +13,34 @@
 
    .. autosummary::
    
+      ~Transport.__aenter__
+      ~Transport.__aexit__
+      ~Transport.__delattr__
+      ~Transport.__dir__
+      ~Transport.__enter__
+      ~Transport.__eq__
+      ~Transport.__exit__
+      ~Transport.__format__
+      ~Transport.__ge__
+      ~Transport.__getattribute__
+      ~Transport.__getstate__
+      ~Transport.__gt__
+      ~Transport.__hash__
       ~Transport.__init__
+      ~Transport.__init_subclass__
+      ~Transport.__le__
+      ~Transport.__lt__
+      ~Transport.__ne__
+      ~Transport.__new__
+      ~Transport.__reduce__
+      ~Transport.__reduce_ex__
+      ~Transport.__repr__
+      ~Transport.__setattr__
+      ~Transport.__sizeof__
+      ~Transport.__str__
+      ~Transport.__subclasshook__
+      ~Transport._build_url
+      ~Transport._map_status_error
       ~Transport.aclose
       ~Transport.aget
       ~Transport.aget_raw
@@ -30,6 +57,13 @@
    .. autosummary::
    
       ~Transport.TIMEOUT_SECOND
+      ~Transport.__annotations__
+      ~Transport.__dict__
+      ~Transport.__doc__
+      ~Transport.__firstlineno__
+      ~Transport.__module__
+      ~Transport.__static_attributes__
+      ~Transport.__weakref__
       ~Transport.async_client
       ~Transport.client
    
