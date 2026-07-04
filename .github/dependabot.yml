@@ -3,10 +3,13 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
+      interval: weekly
     open-pull-requests-limit: 10
     groups:
       actions:
+        update-types:
+          - minor
+          - patch
         patterns:
           - "actions/*"
           - "release-drafter/*"
@@ -14,8 +17,21 @@ updates:
           - "syphar/*"
           - "dorny/*"
           - "orgoro/*"
-  - package-ecosystem: pip
+          - "astral-sh/*"
+
+  - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      python-dependencies:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: weekly
     open-pull-requests-limit: 10

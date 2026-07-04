@@ -2,7 +2,7 @@
 	"name": "Pygleif dev",
 	"context": "..",
 	"dockerFile": "Dockerfile.dev",
-	"postCreateCommand": "script/setup.sh",
+	"postCreateCommand": ".devcontainer/setup.sh",
 	"containerEnv": {
 		"DEVCONTAINER": "1"
 	},
