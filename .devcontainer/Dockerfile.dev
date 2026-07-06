@@ -1,8 +1,6 @@
 FROM mcr.microsoft.com/vscode/devcontainers/python:3.13-bullseye
 LABEL author="PL"
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 ENV FILE_LOCATION "/usr/src/app"
