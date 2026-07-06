@@ -7,14 +7,6 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 ENV FILE_LOCATION "/usr/src/app"
 
-# Disable host checking
-RUN mkdir -p /root/.ssh && \
-    echo "Host *" >> /root/.ssh/config && \
-    echo "StrictHostKeyChecking no" >> /root/.ssh/config
-
 COPY . $FILE_LOCATION
 
 WORKDIR $FILE_LOCATION/
-
-# Set the default shell to bash instead of sh
-ENV SHELL /bin/bash
