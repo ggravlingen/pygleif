@@ -29,6 +29,9 @@ classifiers = [
 [project.urls]
 "Source Code" = "https://github.com/ggravlingen/pygleif"
 
+[project.scripts]
+pygleif = "pygleif.__main__:main"
+
 [dependency-groups]
 dev = [
     "coverage>=7.10",

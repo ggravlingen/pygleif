@@ -39,11 +39,13 @@
       ~GleifClient.__sizeof__
       ~GleifClient.__str__
       ~GleifClient.__subclasshook__
+      ~GleifClient._afetch
+      ~GleifClient._fetch
       ~GleifClient._field_modification_params
       ~GleifClient._filter_params
-      ~GleifClient._lei_to_record
       ~GleifClient._page_params
       ~GleifClient._search_params
+      ~GleifClient._to_record
       ~GleifClient.aassociated_entity
       ~GleifClient.aautocompletions
       ~GleifClient.aby_bic
@@ -74,6 +76,7 @@
       ~GleifClient.aget_vlei_issuer
       ~GleifClient.ahealthcheck
       ~GleifClient.aisins
+      ~GleifClient.aiter_search
       ~GleifClient.ajurisdictions
       ~GleifClient.alei_issuer
       ~GleifClient.alei_issuer_jurisdictions
@@ -122,6 +125,7 @@
       ~GleifClient.get_vlei_issuer
       ~GleifClient.healthcheck
       ~GleifClient.isins
+      ~GleifClient.iter_search
       ~GleifClient.jurisdictions
       ~GleifClient.lei_issuer
       ~GleifClient.lei_issuer_jurisdictions

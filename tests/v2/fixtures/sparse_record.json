@@ -1,0 +1,18 @@
+{
+  "meta": {},
+  "data": {
+    "id": "SPARSE00000000000001",
+    "type": "lei-records",
+    "attributes": {
+      "lei": "SPARSE00000000000001",
+      "entity": {
+        "legalName": {"name": "Sparse Example AB"},
+        "legalAddress": {"country": "SE"},
+        "status": "ACTIVE"
+      },
+      "registration": {
+        "status": "ISSUED"
+      }
+    }
+  }
+}
