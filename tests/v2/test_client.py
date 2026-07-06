@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
+from urllib import parse
+
+import pytest
 
 from pygleif.compat.interfaces import BaseApiClient
 from pygleif.v2 import GleifClient
+from pygleif.v2.error import PyGLEIFResponseError
 
 from .conftest import FakeTransport, PagedFakeTransport, load_fixture
 
@@ -240,7 +244,10 @@ def test_v2_iter_search_follows_pagination() -> None:
     """iter_search should yield records across all pages."""
     pages = [
         _page_payload(
-            [_record_payload("LEI0000000000000001"), _record_payload("LEI0000000000000002")],
+            [
+                _record_payload("LEI0000000000000001"),
+                _record_payload("LEI0000000000000002"),
+            ],
             current_page=1,
             last_page=2,
             total=3,
@@ -268,7 +275,10 @@ def test_v2_iter_search_respects_max_records() -> None:
     """iter_search should stop once max_records have been yielded."""
     pages = [
         _page_payload(
-            [_record_payload("LEI0000000000000001"), _record_payload("LEI0000000000000002")],
+            [
+                _record_payload("LEI0000000000000001"),
+                _record_payload("LEI0000000000000002"),
+            ],
             current_page=1,
             last_page=5,
             total=10,
@@ -465,3 +475,72 @@ def test_v2_async_context_manager_closes_transport() -> None:
         return transport.closed
 
     assert asyncio.run(_run()) is True
+
+
+# -- path segment quoting -----------------------------------------------------
+
+
+def test_v2_get_lei_record_quotes_path_injection_attempt() -> None:
+    """A value containing '/' must not redirect the request elsewhere."""
+    malicious = "../fields"
+    quoted_path = f"lei-records/{parse.quote(malicious, safe='')}"
+    payload = load_fixture("9845001B2AD43E664E58_issued")
+    transport = FakeTransport({quoted_path: payload})
+    client = GleifClient(transport=transport)
+    client.get_lei_record(malicious)
+    assert transport.calls[0][0] == quoted_path
+
+
+def test_v2_get_country_quotes_query_injection_attempt() -> None:
+    """A value trying to smuggle extra query params must be encoded too."""
+    malicious = "SE?filter[lei]=leak"
+    quoted_path = f"countries/{parse.quote(malicious, safe='')}"
+    payload = {
+        "data": {
+            "type": "countries",
+            "id": "SE",
+            "attributes": {"code": "SE", "name": "Sweden"},
+        },
+    }
+    transport = FakeTransport({quoted_path: payload})
+    client = GleifClient(transport=transport)
+    client.get_country(malicious)
+    assert transport.calls[0][0] == quoted_path
+
+
+# -- page_size validation ------------------------------------------------
+
+
+def test_v2_search_rejects_page_size_over_the_api_cap() -> None:
+    """A page_size above the documented cap should fail fast, client-side."""
+    client = GleifClient(transport=FakeTransport({}))
+    with pytest.raises(ValueError, match="page_size"):
+        client.search(page_size=201)
+
+
+def test_v2_search_rejects_non_positive_page_size() -> None:
+    """A zero or negative page_size should also fail fast, client-side."""
+    client = GleifClient(transport=FakeTransport({}))
+    with pytest.raises(ValueError, match="page_size"):
+        client.search(page_size=0)
+
+
+# -- response schema validation -------------------------------------------
+
+
+def test_v2_get_lei_record_wraps_schema_mismatch() -> None:
+    """A payload that fails model validation should raise PyGLEIFResponseError."""
+    lei = "9845001B2AD43E664E58"
+    transport = FakeTransport({f"lei-records/{lei}": {"unexpected": "shape"}})
+    client = GleifClient(transport=transport)
+    with pytest.raises(PyGLEIFResponseError):
+        client.get_lei_record(lei)
+
+
+def test_v2_aget_lei_record_wraps_schema_mismatch() -> None:
+    """Async counterpart of the schema-mismatch wrapping test."""
+    lei = "9845001B2AD43E664E58"
+    transport = FakeTransport({f"lei-records/{lei}": {"unexpected": "shape"}})
+    client = GleifClient(transport=transport)
+    with pytest.raises(PyGLEIFResponseError):
+        asyncio.run(client.aget_lei_record(lei))

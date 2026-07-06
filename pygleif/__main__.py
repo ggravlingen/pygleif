@@ -26,7 +26,8 @@ import sys
 from typing import TYPE_CHECKING
 
 from pygleif.v2 import GleifClient
-from pygleif.v2.error import PyGLEIFError
+from pygleif.v2.base import DEFAULT_RETRIES, DEFAULT_TIMEOUT_SECONDS
+from pygleif.v2.error import PyGLEIFError, PyGLEIFNotFoundError, PyGLEIFRateLimitError
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -34,6 +35,13 @@ if TYPE_CHECKING:
     from pydantic import BaseModel
 
 SEARCH_FIELDS = ("fulltext", "bic", "isin", "lei")
+
+#: Exit codes: distinct per error kind so scripts can branch on them.
+EXIT_OK = 0
+EXIT_ERROR = 1
+EXIT_NOT_FOUND = 2
+EXIT_RATE_LIMITED = 3
+EXIT_INTERRUPTED = 130
 
 
 def _dump(model: BaseModel) -> str:
@@ -64,6 +72,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--summary",
         action="store_true",
         help="Print a compact normalized summary instead of the full record.",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=DEFAULT_TIMEOUT_SECONDS,
+        help=f"Request timeout in seconds (default: {DEFAULT_TIMEOUT_SECONDS}).",
+    )
+    parser.add_argument(
+        "--retries",
+        type=int,
+        default=DEFAULT_RETRIES,
+        help=(
+            "Extra attempts for transient failures (HTTP 429/5xx and "
+            f"network errors) (default: {DEFAULT_RETRIES})."
+        ),
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -207,18 +230,30 @@ def _run(client: GleifClient, args: argparse.Namespace) -> str:
     return _DISPATCH[args.command](client, args)
 
 
+def _exit_code_for(exc: PyGLEIFError) -> int:
+    """Map an error to a distinct exit code so callers can branch on it."""
+    if isinstance(exc, PyGLEIFNotFoundError):
+        return EXIT_NOT_FOUND
+    if isinstance(exc, PyGLEIFRateLimitError):
+        return EXIT_RATE_LIMITED
+    return EXIT_ERROR
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the CLI. Returns a process exit code."""
     parser = build_parser()
     args = parser.parse_args(argv)
-    client = GleifClient()
     try:
-        output = _run(client, args)
+        with GleifClient(timeout=args.timeout, retries=args.retries) as client:
+            output = _run(client, args)
     except PyGLEIFError as exc:
         sys.stderr.write(f"error: {exc}\n")
-        return 1
+        return _exit_code_for(exc)
+    except KeyboardInterrupt:
+        sys.stderr.write("interrupted\n")
+        return EXIT_INTERRUPTED
     sys.stdout.write(f"{output}\n")
-    return 0
+    return EXIT_OK
 
 
 def _entrypoint() -> None:

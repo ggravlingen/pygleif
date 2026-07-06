@@ -34,6 +34,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, Self
+from urllib import parse
 
 from pygleif.compat.adapters import normalize_record
 from pygleif.v2.api import (
@@ -68,7 +69,14 @@ from pygleif.v2.api import (
     VLeiIssuerResponse,
     VLeiIssuersResponse,
 )
-from pygleif.v2.base import DEFAULT_TIMEOUT_SECONDS, EXPORT_BASE_URL, Transport
+from pygleif.v2.base import (
+    DEFAULT_RETRIES,
+    DEFAULT_TIMEOUT_SECONDS,
+    EXPORT_BASE_URL,
+    Transport,
+)
+from pygleif.v2.error import PyGLEIFResponseError
+from pygleif.v2.pydantic_shim import ValidationError
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
@@ -96,6 +104,10 @@ class ExportFormat(StrEnum):
     JSON = "json"
 
 
+#: The API rejects ``page[size]`` above this value.
+MAX_PAGE_SIZE = 200
+
+
 class GleifClient:
     """High-level client for the GLEIF API v1.0.
 
@@ -107,14 +119,14 @@ class GleifClient:
         transport: TransportLike | None = None,
         *,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
-        retries: int = 0,
+        retries: int = DEFAULT_RETRIES,
     ) -> None:
         """Init the client, optionally with a custom transport.
 
         ``timeout`` (seconds) and ``retries`` (extra attempts for
-        transient failures such as HTTP 429/5xx) configure the default
-        :class:`~pygleif.v2.base.Transport`; they are ignored when a
-        ``transport`` is injected.
+        transient failures such as HTTP 429/5xx, and for network-level
+        errors) configure the default :class:`~pygleif.v2.base.Transport`;
+        they are ignored when a ``transport`` is injected.
         """
         self._transport = transport or Transport(timeout=timeout, retries=retries)
 
@@ -126,7 +138,7 @@ class GleifClient:
         params: dict[str, Any] | None = None,
     ) -> ModelT:
         """Fetch ``path`` and validate the payload into ``model``."""
-        return model.model_validate(self._transport.get(path, params))
+        return self._validate(model, path, self._transport.get(path, params))
 
     async def _afetch[ModelT: BaseModel](
         self,
@@ -135,12 +147,48 @@ class GleifClient:
         params: dict[str, Any] | None = None,
     ) -> ModelT:
         """Async counterpart of :meth:`_fetch`."""
-        return model.model_validate(await self._transport.aget(path, params))
+        payload = await self._transport.aget(path, params)
+        return self._validate(model, path, payload)
+
+    @staticmethod
+    def _validate[ModelT: BaseModel](
+        model: type[ModelT],
+        path: str,
+        payload: dict[str, Any],
+    ) -> ModelT:
+        """Validate ``payload`` into ``model``, wrapping schema mismatches.
+
+        An upstream GLEIF schema change would otherwise surface as a bare
+        ``pydantic.ValidationError`` that callers catching
+        :class:`~pygleif.v2.error.PyGLEIFError` would not expect.
+        """
+        try:
+            return model.model_validate(payload)
+        except ValidationError as exc:
+            msg = f"Response for {path!r} did not match the expected schema"
+            raise PyGLEIFResponseError(msg, url=path) from exc
+
+    @staticmethod
+    def _segment(value: object) -> str:
+        """URL-encode a dynamic path segment (e.g. an LEI or field code).
+
+        Prevents a value containing ``/`` or query characters from
+        redirecting the request to a different endpoint.
+        """
+        return parse.quote(str(value), safe="")
 
     # -- shared param builders -------------------------------------------
     @staticmethod
     def _page_params(page_number: int, page_size: int) -> dict[str, Any]:
-        """Build the JSON:API pagination params."""
+        """Build the JSON:API pagination params.
+
+        Validates ``page_size`` against the API's documented cap so a
+        misconfigured caller gets an immediate, clear ``ValueError``
+        instead of an opaque server-side error.
+        """
+        if not 1 <= page_size <= MAX_PAGE_SIZE:
+            msg = f"page_size must be between 1 and {MAX_PAGE_SIZE}, got {page_size}"
+            raise ValueError(msg)
         return {"page[number]": page_number, "page[size]": page_size}
 
     @staticmethod
@@ -213,11 +261,11 @@ class GleifClient:
     # -- single record --------------------------------------------------
     def get_lei_record(self, lei: str) -> GLEIFResponse:
         """Return the full LEI record for a single LEI code."""
-        return self._fetch(GLEIFResponse, f"lei-records/{lei}")
+        return self._fetch(GLEIFResponse, f"lei-records/{self._segment(lei)}")
 
     async def aget_lei_record(self, lei: str) -> GLEIFResponse:
         """Return the full LEI record for a single LEI code (async)."""
-        return await self._afetch(GLEIFResponse, f"lei-records/{lei}")
+        return await self._afetch(GLEIFResponse, f"lei-records/{self._segment(lei)}")
 
     def get_lei(self, lei: str) -> RecordLike:
         """Return a normalized :class:`RecordLike` for a single LEI.
@@ -443,11 +491,17 @@ class GleifClient:
         Raises :class:`PyGLEIFNotFoundError` when no direct parent is
         reported (see :meth:`direct_parent_reporting_exception`).
         """
-        return self._fetch(GLEIFResponse, f"lei-records/{lei}/direct-parent")
+        return self._fetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/direct-parent",
+        )
 
     async def adirect_parent(self, lei: str) -> GLEIFResponse:
         """Return the LEI record of the direct parent (async)."""
-        return await self._afetch(GLEIFResponse, f"lei-records/{lei}/direct-parent")
+        return await self._afetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/direct-parent",
+        )
 
     def ultimate_parent(self, lei: str) -> GLEIFResponse:
         """Return the LEI record of the ultimate parent.
@@ -455,11 +509,17 @@ class GleifClient:
         Raises :class:`PyGLEIFNotFoundError` when no ultimate parent is
         reported (see :meth:`ultimate_parent_reporting_exception`).
         """
-        return self._fetch(GLEIFResponse, f"lei-records/{lei}/ultimate-parent")
+        return self._fetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/ultimate-parent",
+        )
 
     async def aultimate_parent(self, lei: str) -> GLEIFResponse:
         """Return the LEI record of the ultimate parent (async)."""
-        return await self._afetch(GLEIFResponse, f"lei-records/{lei}/ultimate-parent")
+        return await self._afetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/ultimate-parent",
+        )
 
     def direct_children(
         self,
@@ -472,7 +532,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return self._fetch(
             SearchResponse,
-            f"lei-records/{lei}/direct-children",
+            f"lei-records/{self._segment(lei)}/direct-children",
             params,
         )
 
@@ -487,7 +547,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return await self._afetch(
             SearchResponse,
-            f"lei-records/{lei}/direct-children",
+            f"lei-records/{self._segment(lei)}/direct-children",
             params,
         )
 
@@ -502,7 +562,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return self._fetch(
             SearchResponse,
-            f"lei-records/{lei}/ultimate-children",
+            f"lei-records/{self._segment(lei)}/ultimate-children",
             params,
         )
 
@@ -517,7 +577,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return await self._afetch(
             SearchResponse,
-            f"lei-records/{lei}/ultimate-children",
+            f"lei-records/{self._segment(lei)}/ultimate-children",
             params,
         )
 
@@ -526,28 +586,28 @@ class GleifClient:
         """Return the direct parent relationship record."""
         return self._fetch(
             RelationshipResponse,
-            f"lei-records/{lei}/direct-parent-relationship",
+            f"lei-records/{self._segment(lei)}/direct-parent-relationship",
         )
 
     async def adirect_parent_relationship(self, lei: str) -> RelationshipResponse:
         """Return the direct parent relationship record (async)."""
         return await self._afetch(
             RelationshipResponse,
-            f"lei-records/{lei}/direct-parent-relationship",
+            f"lei-records/{self._segment(lei)}/direct-parent-relationship",
         )
 
     def ultimate_parent_relationship(self, lei: str) -> RelationshipResponse:
         """Return the ultimate parent relationship record."""
         return self._fetch(
             RelationshipResponse,
-            f"lei-records/{lei}/ultimate-parent-relationship",
+            f"lei-records/{self._segment(lei)}/ultimate-parent-relationship",
         )
 
     async def aultimate_parent_relationship(self, lei: str) -> RelationshipResponse:
         """Return the ultimate parent relationship record (async)."""
         return await self._afetch(
             RelationshipResponse,
-            f"lei-records/{lei}/ultimate-parent-relationship",
+            f"lei-records/{self._segment(lei)}/ultimate-parent-relationship",
         )
 
     def direct_child_relationships(
@@ -561,7 +621,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return self._fetch(
             RelationshipListResponse,
-            f"lei-records/{lei}/direct-child-relationships",
+            f"lei-records/{self._segment(lei)}/direct-child-relationships",
             params,
         )
 
@@ -576,7 +636,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return await self._afetch(
             RelationshipListResponse,
-            f"lei-records/{lei}/direct-child-relationships",
+            f"lei-records/{self._segment(lei)}/direct-child-relationships",
             params,
         )
 
@@ -591,7 +651,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return self._fetch(
             RelationshipListResponse,
-            f"lei-records/{lei}/ultimate-child-relationships",
+            f"lei-records/{self._segment(lei)}/ultimate-child-relationships",
             params,
         )
 
@@ -606,7 +666,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return await self._afetch(
             RelationshipListResponse,
-            f"lei-records/{lei}/ultimate-child-relationships",
+            f"lei-records/{self._segment(lei)}/ultimate-child-relationships",
             params,
         )
 
@@ -618,7 +678,7 @@ class GleifClient:
         """Return the reporting exception for the missing direct parent."""
         return self._fetch(
             ReportingExceptionResponse,
-            f"lei-records/{lei}/direct-parent-reporting-exception",
+            f"lei-records/{self._segment(lei)}/direct-parent-reporting-exception",
         )
 
     async def adirect_parent_reporting_exception(
@@ -628,7 +688,7 @@ class GleifClient:
         """Return the direct parent reporting exception (async)."""
         return await self._afetch(
             ReportingExceptionResponse,
-            f"lei-records/{lei}/direct-parent-reporting-exception",
+            f"lei-records/{self._segment(lei)}/direct-parent-reporting-exception",
         )
 
     def ultimate_parent_reporting_exception(
@@ -638,7 +698,7 @@ class GleifClient:
         """Return the reporting exception for the missing ultimate parent."""
         return self._fetch(
             ReportingExceptionResponse,
-            f"lei-records/{lei}/ultimate-parent-reporting-exception",
+            f"lei-records/{self._segment(lei)}/ultimate-parent-reporting-exception",
         )
 
     async def aultimate_parent_reporting_exception(
@@ -648,7 +708,7 @@ class GleifClient:
         """Return the ultimate parent reporting exception (async)."""
         return await self._afetch(
             ReportingExceptionResponse,
-            f"lei-records/{lei}/ultimate-parent-reporting-exception",
+            f"lei-records/{self._segment(lei)}/ultimate-parent-reporting-exception",
         )
 
     # -- related records --------------------------------------------------
@@ -657,40 +717,58 @@ class GleifClient:
 
         For the issuer's own LEI record, use :meth:`managing_lou`.
         """
-        return self._fetch(LeiIssuerResponse, f"lei-records/{lei}/lei-issuer")
+        return self._fetch(
+            LeiIssuerResponse,
+            f"lei-records/{self._segment(lei)}/lei-issuer",
+        )
 
     async def alei_issuer(self, lei: str) -> LeiIssuerResponse:
         """Return the LEI issuer record for the given LEI (async)."""
-        return await self._afetch(LeiIssuerResponse, f"lei-records/{lei}/lei-issuer")
+        return await self._afetch(
+            LeiIssuerResponse,
+            f"lei-records/{self._segment(lei)}/lei-issuer",
+        )
 
     def managing_lou(self, lei: str) -> GLEIFResponse:
         """Return the LEI record of the managing LOU (LEI issuer)."""
-        return self._fetch(GLEIFResponse, f"lei-records/{lei}/managing-lou")
+        return self._fetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/managing-lou",
+        )
 
     async def amanaging_lou(self, lei: str) -> GLEIFResponse:
         """Return the LEI record of the managing LOU (async)."""
-        return await self._afetch(GLEIFResponse, f"lei-records/{lei}/managing-lou")
+        return await self._afetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/managing-lou",
+        )
 
     def associated_entity(self, lei: str) -> GLEIFResponse:
         """Return the associated entity (fund manager) LEI record."""
-        return self._fetch(GLEIFResponse, f"lei-records/{lei}/associated-entity")
+        return self._fetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/associated-entity",
+        )
 
     async def aassociated_entity(self, lei: str) -> GLEIFResponse:
         """Return the associated entity LEI record (async)."""
         return await self._afetch(
             GLEIFResponse,
-            f"lei-records/{lei}/associated-entity",
+            f"lei-records/{self._segment(lei)}/associated-entity",
         )
 
     def successor_entity(self, lei: str) -> GLEIFResponse:
         """Return the successor entity LEI record."""
-        return self._fetch(GLEIFResponse, f"lei-records/{lei}/successor-entity")
+        return self._fetch(
+            GLEIFResponse,
+            f"lei-records/{self._segment(lei)}/successor-entity",
+        )
 
     async def asuccessor_entity(self, lei: str) -> GLEIFResponse:
         """Return the successor entity LEI record (async)."""
         return await self._afetch(
             GLEIFResponse,
-            f"lei-records/{lei}/successor-entity",
+            f"lei-records/{self._segment(lei)}/successor-entity",
         )
 
     # -- ISIN mappings --------------------------------------------------
@@ -703,7 +781,11 @@ class GleifClient:
     ) -> IsinResponse:
         """Return all ISINs mapped to the given LEI record."""
         params = self._page_params(page_number, page_size)
-        return self._fetch(IsinResponse, f"lei-records/{lei}/isins", params)
+        return self._fetch(
+            IsinResponse,
+            f"lei-records/{self._segment(lei)}/isins",
+            params,
+        )
 
     async def aisins(
         self,
@@ -714,7 +796,11 @@ class GleifClient:
     ) -> IsinResponse:
         """Return all ISINs mapped to the given LEI record (async)."""
         params = self._page_params(page_number, page_size)
-        return await self._afetch(IsinResponse, f"lei-records/{lei}/isins", params)
+        return await self._afetch(
+            IsinResponse,
+            f"lei-records/{self._segment(lei)}/isins",
+            params,
+        )
 
     # -- field modifications ----------------------------------------------
     def field_modifications(  # noqa: PLR0913 - one arg per API filter
@@ -743,7 +829,7 @@ class GleifClient:
         )
         return self._fetch(
             FieldModificationResponse,
-            f"lei-records/{lei}/field-modifications",
+            f"lei-records/{self._segment(lei)}/field-modifications",
             params,
         )
 
@@ -769,7 +855,7 @@ class GleifClient:
         )
         return await self._afetch(
             FieldModificationResponse,
-            f"lei-records/{lei}/field-modifications",
+            f"lei-records/{self._segment(lei)}/field-modifications",
             params,
         )
 
@@ -834,11 +920,11 @@ class GleifClient:
 
     def get_field(self, field_id: str) -> FieldResponse:
         """Return the metadata of a single LEI data field."""
-        return self._fetch(FieldResponse, f"fields/{field_id}")
+        return self._fetch(FieldResponse, f"fields/{self._segment(field_id)}")
 
     async def aget_field(self, field_id: str) -> FieldResponse:
         """Return the metadata of a single LEI data field (async)."""
-        return await self._afetch(FieldResponse, f"fields/{field_id}")
+        return await self._afetch(FieldResponse, f"fields/{self._segment(field_id)}")
 
     # -- LEI and vLEI issuers ----------------------------------------------
     def lei_issuers(
@@ -867,11 +953,14 @@ class GleifClient:
         ``issuer_id`` is the issuer's own LEI code; for the issuer of a
         given LEI record use :meth:`lei_issuer`.
         """
-        return self._fetch(LeiIssuerResponse, f"lei-issuers/{issuer_id}")
+        return self._fetch(LeiIssuerResponse, f"lei-issuers/{self._segment(issuer_id)}")
 
     async def aget_lei_issuer(self, issuer_id: str) -> LeiIssuerResponse:
         """Return a single LEI issuer by its LEI (async)."""
-        return await self._afetch(LeiIssuerResponse, f"lei-issuers/{issuer_id}")
+        return await self._afetch(
+            LeiIssuerResponse,
+            f"lei-issuers/{self._segment(issuer_id)}",
+        )
 
     def lei_issuer_jurisdictions(
         self,
@@ -884,7 +973,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return self._fetch(
             LeiIssuerJurisdictionsResponse,
-            f"lei-issuers/{issuer_id}/jurisdictions",
+            f"lei-issuers/{self._segment(issuer_id)}/jurisdictions",
             params,
         )
 
@@ -899,7 +988,7 @@ class GleifClient:
         params = self._page_params(page_number, page_size)
         return await self._afetch(
             LeiIssuerJurisdictionsResponse,
-            f"lei-issuers/{issuer_id}/jurisdictions",
+            f"lei-issuers/{self._segment(issuer_id)}/jurisdictions",
             params,
         )
 
@@ -925,11 +1014,17 @@ class GleifClient:
 
     def get_vlei_issuer(self, issuer_id: str) -> VLeiIssuerResponse:
         """Return a single vLEI issuer by its LEI."""
-        return self._fetch(VLeiIssuerResponse, f"vlei-issuers/{issuer_id}")
+        return self._fetch(
+            VLeiIssuerResponse,
+            f"vlei-issuers/{self._segment(issuer_id)}",
+        )
 
     async def aget_vlei_issuer(self, issuer_id: str) -> VLeiIssuerResponse:
         """Return a single vLEI issuer by its LEI (async)."""
-        return await self._afetch(VLeiIssuerResponse, f"vlei-issuers/{issuer_id}")
+        return await self._afetch(
+            VLeiIssuerResponse,
+            f"vlei-issuers/{self._segment(issuer_id)}",
+        )
 
     # -- reference data ----------------------------------------------------
     def countries(
@@ -954,11 +1049,11 @@ class GleifClient:
 
     def get_country(self, code: str) -> CountryResponse:
         """Return a single country by its ISO 3166 code."""
-        return self._fetch(CountryResponse, f"countries/{code}")
+        return self._fetch(CountryResponse, f"countries/{self._segment(code)}")
 
     async def aget_country(self, code: str) -> CountryResponse:
         """Return a single country by its ISO 3166 code (async)."""
-        return await self._afetch(CountryResponse, f"countries/{code}")
+        return await self._afetch(CountryResponse, f"countries/{self._segment(code)}")
 
     def entity_legal_forms(
         self,
@@ -986,13 +1081,16 @@ class GleifClient:
 
     def get_entity_legal_form(self, elf_code: str) -> EntityLegalFormResponse:
         """Return a single entity legal form by its ELF code."""
-        return self._fetch(EntityLegalFormResponse, f"entity-legal-forms/{elf_code}")
+        return self._fetch(
+            EntityLegalFormResponse,
+            f"entity-legal-forms/{self._segment(elf_code)}",
+        )
 
     async def aget_entity_legal_form(self, elf_code: str) -> EntityLegalFormResponse:
         """Return a single entity legal form by its ELF code (async)."""
         return await self._afetch(
             EntityLegalFormResponse,
-            f"entity-legal-forms/{elf_code}",
+            f"entity-legal-forms/{self._segment(elf_code)}",
         )
 
     def official_organizational_roles(
@@ -1030,7 +1128,7 @@ class GleifClient:
         """Return a single official organizational role by its OOR code."""
         return self._fetch(
             OfficialOrganizationalRoleResponse,
-            f"official-organizational-roles/{role_id}",
+            f"official-organizational-roles/{self._segment(role_id)}",
         )
 
     async def aget_official_organizational_role(
@@ -1040,7 +1138,7 @@ class GleifClient:
         """Return a single official organizational role (async)."""
         return await self._afetch(
             OfficialOrganizationalRoleResponse,
-            f"official-organizational-roles/{role_id}",
+            f"official-organizational-roles/{self._segment(role_id)}",
         )
 
     def jurisdictions(
@@ -1065,13 +1163,16 @@ class GleifClient:
 
     def get_jurisdiction(self, jurisdiction_id: str) -> JurisdictionResponse:
         """Return a single legal jurisdiction by its code."""
-        return self._fetch(JurisdictionResponse, f"jurisdictions/{jurisdiction_id}")
+        return self._fetch(
+            JurisdictionResponse,
+            f"jurisdictions/{self._segment(jurisdiction_id)}",
+        )
 
     async def aget_jurisdiction(self, jurisdiction_id: str) -> JurisdictionResponse:
         """Return a single legal jurisdiction by its code (async)."""
         return await self._afetch(
             JurisdictionResponse,
-            f"jurisdictions/{jurisdiction_id}",
+            f"jurisdictions/{self._segment(jurisdiction_id)}",
         )
 
     def regions(
@@ -1096,11 +1197,11 @@ class GleifClient:
 
     def get_region(self, region_id: str) -> RegionResponse:
         """Return a single region by its ISO 3166 sub-region code."""
-        return self._fetch(RegionResponse, f"regions/{region_id}")
+        return self._fetch(RegionResponse, f"regions/{self._segment(region_id)}")
 
     async def aget_region(self, region_id: str) -> RegionResponse:
         """Return a single region by its sub-region code (async)."""
-        return await self._afetch(RegionResponse, f"regions/{region_id}")
+        return await self._afetch(RegionResponse, f"regions/{self._segment(region_id)}")
 
     def registration_authorities(
         self,
@@ -1137,7 +1238,7 @@ class GleifClient:
         """Return a single registration authority by its RA code."""
         return self._fetch(
             RegistrationAuthorityResponse,
-            f"registration-authorities/{authority_id}",
+            f"registration-authorities/{self._segment(authority_id)}",
         )
 
     async def aget_registration_authority(
@@ -1147,7 +1248,7 @@ class GleifClient:
         """Return a single registration authority by its RA code (async)."""
         return await self._afetch(
             RegistrationAuthorityResponse,
-            f"registration-authorities/{authority_id}",
+            f"registration-authorities/{self._segment(authority_id)}",
         )
 
     def registration_agents(
@@ -1178,7 +1279,7 @@ class GleifClient:
         """Return a single registration agent by its ID."""
         return self._fetch(
             RegistrationAgentResponse,
-            f"registration-agents/{agent_id}",
+            f"registration-agents/{self._segment(agent_id)}",
         )
 
     async def aget_registration_agent(
@@ -1188,7 +1289,7 @@ class GleifClient:
         """Return a single registration agent by its ID (async)."""
         return await self._afetch(
             RegistrationAgentResponse,
-            f"registration-agents/{agent_id}",
+            f"registration-agents/{self._segment(agent_id)}",
         )
 
     # -- export -------------------------------------------------------------

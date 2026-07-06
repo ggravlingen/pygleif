@@ -13,8 +13,13 @@ transient failures such as the GLEIF rate limit.
 from __future__ import annotations
 
 import asyncio
+import datetime as dt
+from email.utils import parsedate_to_datetime
 from enum import IntEnum
 from importlib import metadata
+import logging
+import random
+import threading
 import time
 from typing import Any, Protocol, Self, runtime_checkable
 from urllib import parse
@@ -25,7 +30,10 @@ from pygleif.v2.error import (
     PyGLEIFApiError,
     PyGLEIFNotFoundError,
     PyGLEIFRateLimitError,
+    PyGLEIFResponseError,
 )
+
+logger = logging.getLogger("pygleif")
 
 API_BASE_URL = "https://api.gleif.org/api/v1"
 EXPORT_BASE_URL = "https://api.gleif.org/export/v1"
@@ -35,6 +43,9 @@ JSON_API_ACCEPT = "application/vnd.api+json"
 #: Transient statuses worth retrying: the rate limit and server errors.
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
 MAX_RETRY_DELAY_SECONDS = 30.0
+#: Extra attempts for transient failures by default; GLEIF's 60 req/min
+#: limit makes 429 a routine event rather than an anomaly.
+DEFAULT_RETRIES = 3
 
 
 class HttpErrorCodes(IntEnum):
@@ -52,22 +63,35 @@ def _user_agent() -> str:
         return "pygleif"
 
 
-def _retry_after_seconds(response: httpx.Response) -> float | None:
-    """Parse the ``Retry-After`` header (integer-seconds form only)."""
+def _retry_after_seconds(response: httpx.Response | None) -> float | None:
+    """Parse the ``Retry-After`` header (seconds or HTTP-date form)."""
+    if response is None:
+        return None
     value = response.headers.get("Retry-After")
     if value is None:
         return None
     try:
         return float(value)
     except ValueError:
+        pass
+    try:
+        target = parsedate_to_datetime(value)
+    except (TypeError, ValueError):
         return None
+    now = dt.datetime.now(target.tzinfo)
+    return max((target - now).total_seconds(), 0.0)
 
 
-def _retry_delay(response: httpx.Response, attempt: int) -> float:
-    """Return the capped backoff delay before the next attempt."""
+def _retry_delay(response: httpx.Response | None, attempt: int) -> float:
+    """Return the capped backoff delay before the next attempt.
+
+    Honors an explicit ``Retry-After`` exactly (the server knows best);
+    otherwise falls back to exponential backoff with full jitter so
+    concurrent clients retrying together don't all retry in lockstep.
+    """
     delay = _retry_after_seconds(response)
     if delay is None:
-        delay = float(2**attempt)
+        delay = random.uniform(0, float(2**attempt))  # noqa: S311 - jitter, not crypto
     return min(delay, MAX_RETRY_DELAY_SECONDS)
 
 
@@ -128,17 +152,18 @@ class Transport:
         base_url: str = API_BASE_URL,
         *,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
-        retries: int = 0,
+        retries: int = DEFAULT_RETRIES,
         httpx_transport: httpx.BaseTransport | None = None,
         httpx_async_transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         """Init the transport.
 
         ``retries`` is the number of extra attempts for transient failures
-        (:data:`RETRY_STATUSES`), honoring ``Retry-After`` with the delay
-        capped at :data:`MAX_RETRY_DELAY_SECONDS`; the default of ``0``
-        never sleeps. The ``httpx_*transport`` hooks exist mainly so tests
-        can inject an ``httpx.MockTransport``.
+        (:data:`RETRY_STATUSES` and network-level errors), honoring
+        ``Retry-After`` with the delay capped at
+        :data:`MAX_RETRY_DELAY_SECONDS`; pass ``0`` to disable retries. The
+        ``httpx_*transport`` hooks exist mainly so tests can inject an
+        ``httpx.MockTransport``.
         """
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
@@ -147,33 +172,53 @@ class Transport:
         self._httpx_async_transport = httpx_async_transport
         self._client: httpx.Client | None = None
         self._async_client: httpx.AsyncClient | None = None
+        self._client_lock = threading.Lock()
+        self._async_client_lock = threading.Lock()
 
     @property
     def client(self) -> httpx.Client:
-        """Return the lazily-created sync ``httpx.Client``."""
+        """Return the lazily-created sync ``httpx.Client``.
+
+        Double-checked locking: the outer check lets the common case (a
+        client already exists) skip the lock entirely. The inner check
+        re-verifies after acquiring it, because another thread may have
+        built the client while this one was waiting on the lock — without
+        it, two threads could each construct a client and one would leak
+        its connection pool.
+        """
         if self._client is None:
-            kwargs: dict[str, Any] = {}
-            if self._httpx_transport is not None:
-                kwargs["transport"] = self._httpx_transport
-            self._client = httpx.Client(
-                timeout=self.timeout,
-                headers={"User-Agent": _user_agent()},
-                **kwargs,
-            )
+            with self._client_lock:
+                if self._client is None:
+                    kwargs: dict[str, Any] = {}
+                    if self._httpx_transport is not None:
+                        kwargs["transport"] = self._httpx_transport
+                    self._client = httpx.Client(
+                        timeout=self.timeout,
+                        headers={"User-Agent": _user_agent()},
+                        **kwargs,
+                    )
         return self._client
 
     @property
     def async_client(self) -> httpx.AsyncClient:
-        """Return the lazily-created ``httpx.AsyncClient``."""
+        """Return the lazily-created ``httpx.AsyncClient``.
+
+        Same double-checked locking as :attr:`client`: skip the lock when
+        a client already exists, and re-check after acquiring it in case
+        another thread (e.g. a different worker running its own event
+        loop) built one first while this one was waiting.
+        """
         if self._async_client is None:
-            kwargs: dict[str, Any] = {}
-            if self._httpx_async_transport is not None:
-                kwargs["transport"] = self._httpx_async_transport
-            self._async_client = httpx.AsyncClient(
-                timeout=self.timeout,
-                headers={"User-Agent": _user_agent()},
-                **kwargs,
-            )
+            with self._async_client_lock:
+                if self._async_client is None:
+                    kwargs: dict[str, Any] = {}
+                    if self._httpx_async_transport is not None:
+                        kwargs["transport"] = self._httpx_async_transport
+                    self._async_client = httpx.AsyncClient(
+                        timeout=self.timeout,
+                        headers={"User-Agent": _user_agent()},
+                        **kwargs,
+                    )
         return self._async_client
 
     def _build_url(
@@ -235,12 +280,40 @@ class Transport:
         url: str,
         headers: dict[str, str] | None,
     ) -> httpx.Response:
-        """GET with up to ``self.retries`` extra attempts on transient errors."""
+        """GET with up to ``self.retries`` extra attempts on transient errors.
+
+        Retries both transient HTTP statuses (:data:`RETRY_STATUSES`) and
+        network-level failures (``httpx.TransportError``, e.g. connection
+        resets or timeouts) so a momentary blip doesn't fail the request.
+        """
         for attempt in range(self.retries):
-            response = self.client.get(url, headers=headers)
+            try:
+                response = self.client.get(url, headers=headers)
+            except httpx.TransportError as exc:
+                delay = _retry_delay(None, attempt)
+                logger.warning(
+                    "pygleif: network error on attempt %d/%d for %s (%s); "
+                    "retrying in %.1fs",
+                    attempt + 1,
+                    self.retries + 1,
+                    url,
+                    exc,
+                    delay,
+                )
+                time.sleep(delay)
+                continue
             if response.status_code not in RETRY_STATUSES:
                 return response
-            time.sleep(_retry_delay(response, attempt))
+            delay = _retry_delay(response, attempt)
+            logger.warning(
+                "pygleif: got HTTP %d on attempt %d/%d for %s; retrying in %.1fs",
+                response.status_code,
+                attempt + 1,
+                self.retries + 1,
+                url,
+                delay,
+            )
+            time.sleep(delay)
         return self.client.get(url, headers=headers)
 
     async def _asend_with_retry(
@@ -250,10 +323,33 @@ class Transport:
     ) -> httpx.Response:
         """Async counterpart of :meth:`_send_with_retry`."""
         for attempt in range(self.retries):
-            response = await self.async_client.get(url, headers=headers)
+            try:
+                response = await self.async_client.get(url, headers=headers)
+            except httpx.TransportError as exc:
+                delay = _retry_delay(None, attempt)
+                logger.warning(
+                    "pygleif: network error on attempt %d/%d for %s (%s); "
+                    "retrying in %.1fs",
+                    attempt + 1,
+                    self.retries + 1,
+                    url,
+                    exc,
+                    delay,
+                )
+                await asyncio.sleep(delay)
+                continue
             if response.status_code not in RETRY_STATUSES:
                 return response
-            await asyncio.sleep(_retry_delay(response, attempt))
+            delay = _retry_delay(response, attempt)
+            logger.warning(
+                "pygleif: got HTTP %d on attempt %d/%d for %s; retrying in %.1fs",
+                response.status_code,
+                attempt + 1,
+                self.retries + 1,
+                url,
+                delay,
+            )
+            await asyncio.sleep(delay)
         return await self.async_client.get(url, headers=headers)
 
     def _request(
@@ -267,6 +363,7 @@ class Transport:
         """Issue a GET request, mapping failures to the v2 errors."""
         url = self._build_url(path, params, base_url=base_url)
         headers = {"Accept": accept} if accept else None
+        logger.debug("pygleif: GET %s", url)
         try:
             response = self._send_with_retry(url, headers)
             response.raise_for_status()
@@ -275,6 +372,7 @@ class Transport:
         except httpx.HTTPError as exc:
             msg = f"An unexpected error occurred: {exc!s}"
             raise PyGLEIFApiError(msg, url=url) from exc
+        logger.debug("pygleif: %s -> %d", url, response.status_code)
         return response
 
     async def _arequest(
@@ -288,6 +386,7 @@ class Transport:
         """Async counterpart of :meth:`_request`."""
         url = self._build_url(path, params, base_url=base_url)
         headers = {"Accept": accept} if accept else None
+        logger.debug("pygleif: GET %s", url)
         try:
             response = await self._asend_with_retry(url, headers)
             response.raise_for_status()
@@ -296,11 +395,26 @@ class Transport:
         except httpx.HTTPError as exc:
             msg = f"An unexpected error occurred: {exc!s}"
             raise PyGLEIFApiError(msg, url=url) from exc
+        logger.debug("pygleif: %s -> %d", url, response.status_code)
         return response
+
+    @staticmethod
+    def _decode_json(response: httpx.Response) -> dict[Any, Any]:
+        """Decode a response body as JSON, mapping decode failures."""
+        try:
+            return response.json()
+        except ValueError as exc:
+            url = str(response.request.url)
+            msg = f"Response body is not valid JSON: {url}"
+            raise PyGLEIFResponseError(
+                msg,
+                url=url,
+                body=response.text[:200],
+            ) from exc
 
     def get(self, path: str, params: dict[str, Any] | None = None) -> dict[Any, Any]:
         """Issue a GET request and return the decoded JSON body."""
-        return self._request(path, params, accept=JSON_API_ACCEPT).json()
+        return self._decode_json(self._request(path, params, accept=JSON_API_ACCEPT))
 
     async def aget(
         self,
@@ -309,7 +423,7 @@ class Transport:
     ) -> dict[Any, Any]:
         """Issue an async GET request and return the decoded JSON body."""
         response = await self._arequest(path, params, accept=JSON_API_ACCEPT)
-        return response.json()
+        return self._decode_json(response)
 
     def get_raw(
         self,
