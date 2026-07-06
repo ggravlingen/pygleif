@@ -1,4 +1,9 @@
 version: 2
+multi-ecosystem-groups:
+  ruff:
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -35,3 +40,19 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    
+  - package-ecosystem: "uv"
+    directory: "/"
+    patterns: ["ruff"]
+    multi-ecosystem-group: "ruff"
+  
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    patterns: ["*/astral-sh/ruff-pre-commit"]
+    multi-ecosystem-group: "ruff"
