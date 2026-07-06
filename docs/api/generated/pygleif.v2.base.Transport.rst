@@ -39,8 +39,12 @@
       ~Transport.__sizeof__
       ~Transport.__str__
       ~Transport.__subclasshook__
+      ~Transport._arequest
+      ~Transport._asend_with_retry
       ~Transport._build_url
       ~Transport._map_status_error
+      ~Transport._request
+      ~Transport._send_with_retry
       ~Transport.aclose
       ~Transport.aget
       ~Transport.aget_raw
@@ -56,7 +60,6 @@
 
    .. autosummary::
    
-      ~Transport.TIMEOUT_SECOND
       ~Transport.__annotations__
       ~Transport.__dict__
       ~Transport.__doc__

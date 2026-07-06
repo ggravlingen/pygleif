@@ -62,6 +62,24 @@ client.search(
 )
 ```
 
+### Iterating over all results
+
+`iter_search` (and its async counterpart `aiter_search`) follows the
+response pagination for you and yields one
+{class}`~pygleif.v2.api.models.LeiRecord` at a time:
+
+```python
+for record in client.iter_search(
+    filters={"entity.legalAddress.country": "SE"},
+    max_records=500,
+):
+    print(record.attributes.lei, record.attributes.entity.legal_name.name)
+```
+
+The API caps `page_size` at 200 (the iterator defaults to 100) and the
+service is rate limited to 60 requests/minute, so prefer large page sizes
+and `max_records` when you only need the first part of a big result set.
+
 ### Filter operators
 
 Filter values are passed through verbatim, so the API's documented search
@@ -251,17 +269,59 @@ finally:
     client.close()
 ```
 
-## Error handling
+## Configuring the client
 
-All v2 errors derive from {class}`~pygleif.v2.error.PyGLEIFError`:
+The request timeout (seconds) and the number of retries for transient
+failures (HTTP 429 and 5xx) are configurable; retries honor the server's
+`Retry-After` header with the delay capped at 30 seconds:
 
 ```python
-from pygleif.v2.error import PyGLEIFNotFoundError, PyGLEIFRateLimitError
+client = GleifClient(timeout=30, retries=2)
+```
+
+For full control (e.g. a custom base URL), build the
+{class}`~pygleif.v2.base.Transport` yourself; the keyword arguments above
+are ignored when a transport is injected:
+
+```python
+from pygleif import GleifClient, Transport
+
+client = GleifClient(transport=Transport(timeout=30, retries=2))
+```
+
+## Error handling
+
+All v2 errors derive from {class}`~pygleif.v2.error.PyGLEIFError` and are
+importable from `pygleif.v2`. API failures carry their request context:
+`status_code` (`None` for network-level failures), the requested `url`, a
+`body` excerpt, and — for rate limits — the server-suggested `retry_after`
+in seconds:
+
+```python
+from pygleif.v2 import PyGLEIFApiError, PyGLEIFNotFoundError, PyGLEIFRateLimitError
 
 try:
     client.get_lei_record("does-not-exist")
 except PyGLEIFNotFoundError:
     ...  # HTTP 404
-except PyGLEIFRateLimitError:
+except PyGLEIFRateLimitError as exc:
     ...  # HTTP 429 - 60 requests/minute limit exceeded
+    print(exc.retry_after)
+except PyGLEIFApiError as exc:
+    print(exc.status_code, exc.url, exc.body)
 ```
+
+## Command line
+
+The package installs a `pygleif` console command (also available as
+`python -m pygleif`) built on the v2 client:
+
+```console
+$ pygleif get 5493001KJTIIGC8Y1R12
+$ pygleif --summary get 5493001KJTIIGC8Y1R12
+$ pygleif search "bank" --field fulltext --page-size 5
+$ pygleif owners 315700WQBDF1ZVVE0T64
+$ pygleif isins 5493001KJTIIGC8Y1R12
+```
+
+Run `pygleif --help` for the full command list.

@@ -45,6 +45,30 @@ print(response.data[0].attributes.lei)
 # prints 213800T8PC8Q4FYJZR07
 ```
 
+#### Example: iterating over a full result set
+
+`iter_search` follows the API's pagination for you (async: `aiter_search`):
+
+```python
+from pygleif import GleifClient
+
+client = GleifClient(retries=2)
+for record in client.iter_search(
+    filters={"entity.legalAddress.country": "SE"},
+    max_records=500,
+):
+    print(record.attributes.lei, record.attributes.entity.legal_name.name)
+```
+
+#### Command line
+
+The package also installs a `pygleif` console command:
+
+```console
+$ pygleif get 5493001KJTIIGC8Y1R12
+$ pygleif search "bank" --page-size 5
+```
+
 #### Async usage
 
 Every `GleifClient` method has an `a`-prefixed async counterpart (e.g.

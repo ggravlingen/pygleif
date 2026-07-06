@@ -8,7 +8,7 @@ from typing import Any
 from pygleif.compat.interfaces import BaseApiClient
 from pygleif.v2 import GleifClient
 
-from .conftest import FakeTransport, load_fixture
+from .conftest import FakeTransport, PagedFakeTransport, load_fixture
 
 
 def _client_for_single_record() -> tuple[GleifClient, FakeTransport]:
@@ -38,6 +38,53 @@ def test_v2_get_lei_returns_normalized_dto() -> None:
     record = client.get_lei("9845001B2AD43E664E58")
     assert record.lei == "9845001B2AD43E664E58"
     assert record.country is not None
+
+
+def test_v2_get_lei_record_parses_lapsed_fixture() -> None:
+    """A second real record (lapsed) should parse into the v2 models."""
+    lei = "549300LBI3LRIZ2V8V66"
+    transport = FakeTransport({f"lei-records/{lei}": load_fixture(f"{lei}_lapsed")})
+    client = GleifClient(transport=transport)
+    response = client.get_lei_record(lei)
+    assert response.data.attributes.lei == lei
+
+
+def test_v2_get_lei_record_parses_sparse_record() -> None:
+    """A record with only CDF-mandatory fields should parse tolerantly."""
+    lei = "SPARSE00000000000001"
+    transport = FakeTransport({f"lei-records/{lei}": load_fixture("sparse_record")})
+    client = GleifClient(transport=transport)
+    response = client.get_lei_record(lei)
+    entity = response.data.attributes.entity
+    assert entity.legal_name.name == "Sparse Example AB"
+    assert entity.legal_address.country == "SE"
+    assert entity.headquarters_address is None
+    assert entity.other_names == []
+    assert response.data.attributes.registration.validated_at is None
+    assert response.data.relationships is None
+
+
+def test_v2_pagination_parses_from_key() -> None:
+    """The reserved ``from`` key should map to ``from_``."""
+    payload = {
+        "meta": {
+            "pagination": {
+                "currentPage": 1,
+                "perPage": 15,
+                "from": 1,
+                "to": 15,
+                "total": 100,
+                "lastPage": 7,
+            },
+        },
+        "data": [],
+    }
+    transport = FakeTransport({"lei-records": payload})
+    client = GleifClient(transport=transport)
+    pagination = client.search().meta.pagination
+    assert pagination is not None
+    assert pagination.from_ == 1
+    assert pagination.model_dump(by_alias=True)["from"] == 1
 
 
 def test_v2_search_builds_filter_params() -> None:
@@ -110,6 +157,175 @@ def test_v2_fields_parses_payload() -> None:
     client = GleifClient(transport=transport)
     result = client.fields()
     assert result.data[0].attributes.data_type == "STRING"
+
+
+def test_v2_convenience_searches_build_filter_params() -> None:
+    """search_fulltext/by_bic/by_isin should map to the right filters."""
+    transport = FakeTransport({"lei-records": {"meta": {}, "data": []}})
+    client = GleifClient(transport=transport)
+    client.search_fulltext("bank")
+    client.by_bic("HELADEF1RRS")
+    client.by_isin("DE000ST8MPP0")
+    assert transport.calls[0][1]["filter[fulltext]"] == "bank"
+    assert transport.calls[1][1]["filter[bic]"] == "HELADEF1RRS"
+    assert transport.calls[2][1]["filter[isin]"] == "DE000ST8MPP0"
+
+
+def test_v2_healthcheck_returns_true_on_success() -> None:
+    """Healthcheck should return True when the transport succeeds."""
+    transport = FakeTransport({"fields": {"meta": {}, "data": []}})
+    client = GleifClient(transport=transport)
+    assert client.healthcheck() is True
+
+
+def test_v2_healthcheck_returns_false_on_error() -> None:
+    """Healthcheck should swallow transport errors and return False."""
+
+    class FailingTransport:
+        def get(
+            self,
+            path: str,
+            params: dict[str, Any] | None = None,
+        ) -> dict[str, Any]:
+            raise RuntimeError("boom")
+
+    client = GleifClient(transport=FailingTransport())  # type: ignore[arg-type]
+    assert client.healthcheck() is False
+
+
+# -- pagination iterators ---------------------------------------------------
+
+
+def _record_payload(lei: str) -> dict[str, Any]:
+    """Build a minimal LEI record data object."""
+    return {
+        "id": lei,
+        "type": "lei-records",
+        "attributes": {
+            "lei": lei,
+            "entity": {
+                "legalName": {"name": f"Entity {lei}"},
+                "legalAddress": {"country": "SE"},
+                "status": "ACTIVE",
+            },
+            "registration": {"status": "ISSUED"},
+        },
+    }
+
+
+def _page_payload(
+    records: list[dict[str, Any]],
+    *,
+    current_page: int,
+    last_page: int,
+    total: int,
+) -> dict[str, Any]:
+    """Build a search response page with pagination meta."""
+    return {
+        "meta": {
+            "pagination": {
+                "currentPage": current_page,
+                "perPage": len(records),
+                "from": 1,
+                "to": len(records),
+                "total": total,
+                "lastPage": last_page,
+            },
+        },
+        "data": records,
+    }
+
+
+def test_v2_iter_search_follows_pagination() -> None:
+    """iter_search should yield records across all pages."""
+    pages = [
+        _page_payload(
+            [_record_payload("LEI0000000000000001"), _record_payload("LEI0000000000000002")],
+            current_page=1,
+            last_page=2,
+            total=3,
+        ),
+        _page_payload(
+            [_record_payload("LEI0000000000000003")],
+            current_page=2,
+            last_page=2,
+            total=3,
+        ),
+    ]
+    transport = PagedFakeTransport({"lei-records": pages})
+    client = GleifClient(transport=transport)
+    records = list(client.iter_search(filters={"fulltext": "bank"}, page_size=2))
+    assert [record.id for record in records] == [
+        "LEI0000000000000001",
+        "LEI0000000000000002",
+        "LEI0000000000000003",
+    ]
+    assert [params["page[number]"] for _, params in transport.calls] == [1, 2]
+    assert all(params["filter[fulltext]"] == "bank" for _, params in transport.calls)
+
+
+def test_v2_iter_search_respects_max_records() -> None:
+    """iter_search should stop once max_records have been yielded."""
+    pages = [
+        _page_payload(
+            [_record_payload("LEI0000000000000001"), _record_payload("LEI0000000000000002")],
+            current_page=1,
+            last_page=5,
+            total=10,
+        ),
+    ]
+    transport = PagedFakeTransport({"lei-records": pages})
+    client = GleifClient(transport=transport)
+    records = list(client.iter_search(max_records=2))
+    assert len(records) == 2
+    assert len(transport.calls) == 1
+
+
+def test_v2_iter_search_stops_on_empty_page() -> None:
+    """iter_search should stop without a second request on empty data."""
+    pages = [_page_payload([], current_page=1, last_page=3, total=0)]
+    transport = PagedFakeTransport({"lei-records": pages})
+    client = GleifClient(transport=transport)
+    assert list(client.iter_search()) == []
+    assert len(transport.calls) == 1
+
+
+def test_v2_iter_search_stops_without_pagination_meta() -> None:
+    """iter_search should stop after one page when meta lacks pagination."""
+    payload = {"meta": {}, "data": [_record_payload("LEI0000000000000001")]}
+    transport = PagedFakeTransport({"lei-records": [payload]})
+    client = GleifClient(transport=transport)
+    records = list(client.iter_search())
+    assert len(records) == 1
+    assert len(transport.calls) == 1
+
+
+def test_v2_aiter_search_follows_pagination() -> None:
+    """aiter_search should mirror iter_search for the async path."""
+    pages = [
+        _page_payload(
+            [_record_payload("LEI0000000000000001")],
+            current_page=1,
+            last_page=2,
+            total=2,
+        ),
+        _page_payload(
+            [_record_payload("LEI0000000000000002")],
+            current_page=2,
+            last_page=2,
+            total=2,
+        ),
+    ]
+    transport = PagedFakeTransport({"lei-records": pages})
+    client = GleifClient(transport=transport)
+
+    async def _collect() -> list[str]:
+        return [record.id async for record in client.aiter_search()]
+
+    assert asyncio.run(_collect()) == [
+        "LEI0000000000000001",
+        "LEI0000000000000002",
+    ]
 
 
 # -- async counterparts --------------------------------------------------

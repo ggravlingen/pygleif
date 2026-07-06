@@ -23,6 +23,12 @@ Covers the resources exposed by https://api.gleif.org/api/v1:
 The JSON API responses use camelCase keys; models accept both camelCase
 (via the alias generator) and snake_case (``populate_by_name``). Keys the
 API serves in kebab-case (e.g. ``managing-lou``) carry explicit aliases.
+
+Parsing is deliberately tolerant: only fields the LEI-CDF schema marks as
+mandatory (the LEI itself, the entity/registration blocks, legal name,
+legal address country, statuses) are required. Everything else defaults
+to ``None`` (or ``[]`` for lists) so a single degenerate record cannot
+fail an entire response parse.
 """
 
 from __future__ import annotations
@@ -56,62 +62,62 @@ class ValidatedAt(BaseSchema):
     """Represent validated-at information."""
 
     id: str
-    other: str | None
+    other: str | None = None
 
 
 class Registration(BaseSchema):
     """Represent registration information."""
 
-    corroboration_level: str
-    initial_registration_date: datetime
-    last_update_date: datetime
-    managing_lou: str
-    next_renewal_date: datetime
-    other_validation_authorities: list[Any]
+    corroboration_level: str | None = None
+    initial_registration_date: datetime | None = None
+    last_update_date: datetime | None = None
+    managing_lou: str | None = None
+    next_renewal_date: datetime | None = None
+    other_validation_authorities: list[Any] = Field(default_factory=list)
     status: str
     validated_as: str | None = None
-    validated_at: ValidatedAt
+    validated_at: ValidatedAt | None = None
 
 
 class GeneralEntity(BaseSchema):
     """Represent a general entity."""
 
-    lei: str | None = Field(..., description=DESCRIPTION_VALUES["lei"])
-    name: str | None
+    lei: str | None = Field(None, description=DESCRIPTION_VALUES["lei"])
+    name: str | None = None
 
 
 class Address(BaseSchema):
     """Represent an address."""
 
-    language: str | None
-    address_lines: list[str]
-    address_number: str | None
-    address_number_within_building: str | None
-    mail_routing: str | None
-    city: str
-    region: str | None
+    language: str | None = None
+    address_lines: list[str] = Field(default_factory=list)
+    address_number: str | None = None
+    address_number_within_building: str | None = None
+    mail_routing: str | None = None
+    city: str | None = None
+    region: str | None = None
     country: str
-    postal_code: str | None
+    postal_code: str | None = None
 
 
 class Expiration(BaseSchema):
     """Represent expiration data."""
 
-    date: str | None
-    reason: str | None
+    date: str | None = None
+    reason: str | None = None
 
 
 class LegalForm(BaseSchema):
     """Represent the legal form."""
 
-    id: str | None
-    other: str | None
+    id: str | None = None
+    other: str | None = None
 
 
 class Name(BaseSchema):
     """Represent a name."""
 
-    name: str | None
+    name: str | None = None
     language: str | None = None
     type: str | None = None
 
@@ -120,37 +126,37 @@ class RegisteredAt(BaseSchema):
     """Represent registered-at information."""
 
     id: str
-    other: str | None
+    other: str | None = None
 
 
 class Entity(BaseSchema):
     """Represent entity information."""
 
-    associated_entity: GeneralEntity
-    category: str
-    creation_date: str | None
-    event_groups: list[Any]
-    expiration: Expiration
-    headquarters_address: Address
-    jurisdiction: str
+    associated_entity: GeneralEntity | None = None
+    category: str | None = None
+    creation_date: str | None = None
+    event_groups: list[Any] = Field(default_factory=list)
+    expiration: Expiration | None = None
+    headquarters_address: Address | None = None
+    jurisdiction: str | None = None
     legal_address: Address
-    legal_form: LegalForm
+    legal_form: LegalForm | None = None
     legal_name: Name
-    other_addresses: list[Any]
-    other_names: list[Name]
+    other_addresses: list[Any] = Field(default_factory=list)
+    other_names: list[Name] = Field(default_factory=list)
     registered_as: str | None = None
-    registered_at: RegisteredAt
+    registered_at: RegisteredAt | None = None
     status: str
-    successor_entities: list[Any]
+    successor_entities: list[Any] = Field(default_factory=list)
     sub_category: str | None = None
-    successor_entity: GeneralEntity
+    successor_entity: GeneralEntity | None = None
     transliteraded_other_names: list[Any] | None = None
 
 
 class Attributes(BaseSchema):
     """Represent attribute information."""
 
-    bic: list[str] | None
+    bic: list[str] | None = None
     lei: str = Field(..., description=DESCRIPTION_VALUES["lei"])
     entity: Entity
     registration: Registration
@@ -198,18 +204,14 @@ class Relationships(BaseSchema):
     isins: Links | None = None
 
 
-class Data(BaseSchema):
-    """Represent an LEI record data object."""
+class LeiRecord(BaseSchema):
+    """A single LEI record data object."""
 
     id: str
     type: str
     attributes: Attributes
-    links: LinkData
-    relationships: Relationships
-
-
-#: Preferred v2 name for a single LEI record.
-LeiRecord = Data
+    links: LinkData | None = None
+    relationships: Relationships | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -226,7 +228,9 @@ class Pagination(BaseSchema):
 
     current_page: int
     per_page: int
-    _from: int
+    # ``from`` is a keyword; ``to_camel`` does not strip the trailing
+    # underscore, so the alias must be explicit.
+    from_: int | None = Field(default=None, alias="from")
     to: int | None = None
     total: int
     last_page: int
@@ -246,14 +250,14 @@ class GLEIFResponse(BaseSchema):
     """Single LEI record response (``/lei-records/{lei}``)."""
 
     meta: Meta
-    data: Data
+    data: LeiRecord
 
 
 class SearchResponse(BaseSchema):
     """Search / list response (``/lei-records``)."""
 
     meta: Meta
-    data: list[Data]
+    data: list[LeiRecord]
 
 
 # ---------------------------------------------------------------------------

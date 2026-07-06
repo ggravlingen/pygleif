@@ -6,12 +6,16 @@ import json
 from pathlib import Path
 from typing import Any
 
-FIXTURE_DIR = Path(__file__).parent.parent / "v1" / "fixtures"
+FIXTURE_DIR = Path(__file__).parent / "fixtures"
+V1_FIXTURE_DIR = Path(__file__).parent.parent / "v1" / "fixtures"
 
 
 def load_fixture(name: str) -> dict[str, Any]:
-    """Load a JSON fixture from the shared v1 fixtures directory."""
-    with (FIXTURE_DIR / f"{name}.json").open() as handle:
+    """Load a JSON fixture, falling back to the shared v1 fixtures."""
+    path = FIXTURE_DIR / f"{name}.json"
+    if not path.exists():
+        path = V1_FIXTURE_DIR / f"{name}.json"
+    with path.open() as handle:
         return json.load(handle)
 
 
@@ -62,3 +66,28 @@ class FakeTransport:
     ) -> bytes:
         """Async counterpart of :meth:`get_raw`."""
         return self.get_raw(path, params, base_url=base_url)
+
+    def close(self) -> None:
+        """No-op close to satisfy the transport duck type."""
+
+    async def aclose(self) -> None:
+        """No-op close to satisfy the transport duck type."""
+
+
+class PagedFakeTransport(FakeTransport):
+    """Fake transport that serves successive payloads per path.
+
+    Unlike :class:`FakeTransport`, each call to ``get`` for a path pops
+    the next payload from its list, which lets tests exercise pagination
+    where the same path is requested repeatedly.
+    """
+
+    def __init__(self, pages: dict[str, list[dict[str, Any]]]) -> None:
+        """Store the path -> list-of-payloads mappings."""
+        super().__init__({})
+        self.pages = {path: list(payloads) for path, payloads in pages.items()}
+
+    def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Record the call and pop the next canned payload for ``path``."""
+        self.calls.append((path, params))
+        return self.pages[path].pop(0)
