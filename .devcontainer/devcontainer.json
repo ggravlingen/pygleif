@@ -6,7 +6,6 @@
 	"containerEnv": {
 		"DEVCONTAINER": "1"
 	},
-	"remoteUser": "root",
 	"runArgs": [
 		"--env",
 		"GIT_EDITOR='code --wait'"

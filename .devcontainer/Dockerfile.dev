@@ -1,5 +1,5 @@
 FROM mcr.microsoft.com/vscode/devcontainers/python:3.13-bullseye
-LABEL author="NCR"
+LABEL author="PL"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
