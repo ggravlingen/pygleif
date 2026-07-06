@@ -24,7 +24,7 @@ jobs:
       python_versions: ${{ steps.info.outputs.python_versions }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v7.0.0
 
       - name: Filter for core changes
         uses: dorny/paths-filter@v3.0.2
@@ -57,7 +57,7 @@ jobs:
     if: needs.info.outputs.run_pipeline == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v7.0.0
         with:
           fetch-depth: "2"
 
@@ -96,7 +96,7 @@ jobs:
     if: needs.info.outputs.run_pipeline == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v7.0.0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -132,7 +132,7 @@ jobs:
           - py314-v2
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v7.0.0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -155,7 +155,7 @@ jobs:
     if: needs.info.outputs.run_pipeline == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5.0.0
+        uses: actions/checkout@v7.0.0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
