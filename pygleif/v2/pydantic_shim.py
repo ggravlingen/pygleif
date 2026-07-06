@@ -6,7 +6,7 @@ modern pydantic v2 API.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from pydantic.alias_generators import to_camel
 
-__all__ = ["BaseModel", "ConfigDict", "Field", "to_camel"]
+__all__ = ["BaseModel", "ConfigDict", "Field", "ValidationError", "to_camel"]

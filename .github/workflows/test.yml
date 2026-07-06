@@ -7,6 +7,13 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
+  schedule:
+    # Weekly live smoke test against the real GLEIF API to catch upstream
+    # schema drift before it surfaces as a user-facing bug.
+    - cron: "0 6 * * 1"
 
 permissions:
   pull-requests: write
@@ -19,6 +26,7 @@ jobs:
   info:
     runs-on: ubuntu-latest
     name: Collect information & changes data
+    if: github.event_name != 'schedule'
     outputs:
       run_pipeline: ${{ steps.changes.outputs.core }}
       python_versions: ${{ steps.info.outputs.python_versions }}
@@ -85,7 +93,6 @@ jobs:
 
   pytest:
     name: Run test suite
-    continue-on-error: true
     needs:
       - info
     runs-on: ubuntu-latest
@@ -168,3 +175,33 @@ jobs:
 
       - name: Build Sphinx docs (warnings as errors)
         run: uv run sphinx-build -b html -W docs docs/_build/html
+
+  live-smoke-test:
+    name: Live GLEIF API smoke test
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install requirements
+        run: uv sync --all-groups
+
+      - name: Hit the real GLEIF API
+        run: |
+          uv run python -c "
+          from pygleif.v2 import GleifClient
+
+          with GleifClient(retries=3) as client:
+              if not client.healthcheck():
+                  raise SystemExit('GLEIF API healthcheck failed')
+              record = client.get_lei_record('5493001KJTIIGC8Y1R12')
+              print(record.data.attributes.lei)
+          "

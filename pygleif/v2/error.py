@@ -53,3 +53,15 @@ class PyGLEIFRateLimitError(PyGLEIFApiError):
         """Init the error with the server-suggested retry delay."""
         super().__init__(message, status_code=status_code, url=url, body=body)
         self.retry_after = retry_after
+
+
+class PyGLEIFResponseError(PyGLEIFApiError):
+    """Raised when a successful response can't be parsed as expected.
+
+    Covers a body that isn't valid JSON (e.g. an intermediary proxy or
+    error page) and a body that is valid JSON but fails to validate
+    against the expected model (e.g. an upstream GLEIF schema change).
+    Both would otherwise surface as an unrelated exception type
+    (``json.JSONDecodeError`` / ``pydantic.ValidationError``) that
+    callers catching :class:`PyGLEIFError` would not expect.
+    """
