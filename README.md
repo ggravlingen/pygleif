@@ -72,7 +72,7 @@ $ pygleif search "bank" --page-size 5
 #### Async usage
 
 Every `GleifClient` method has an `a`-prefixed async counterpart (e.g.
-`search_fulltext` / `asearch_fulltext`), backed by `httpx`:
+`search_fulltext` / `asearch_fulltext`), backed by `httpx2`:
 
 ```python
 import asyncio

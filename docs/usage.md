@@ -11,7 +11,7 @@ client = GleifClient()
 
 Every method has an async counterpart prefixed with `a` (e.g. `search` /
 `asearch`, `get_lei` / `aget_lei`, `fields` / `afields`). Both share the same
-[`httpx`](https://www.python-httpx.org/)-based
+[`httpx2`](https://github.com/pydantic/httpx2/)-based
 {class}`~pygleif.v2.base.Transport`, so you can freely mix sync and async
 usage against the same client. See "Async usage" below.
 
@@ -258,7 +258,7 @@ asyncio.run(main())
 ```
 
 Using `async with` (or `with` for sync-only code) ensures the underlying
-`httpx` connection pool is closed when you're done. Without a context
+`httpx2` connection pool is closed when you're done. Without a context
 manager, call `client.close()` or `await client.aclose()` explicitly:
 
 ```python
