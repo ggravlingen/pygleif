@@ -26,7 +26,11 @@ import sys
 from typing import TYPE_CHECKING
 
 from pygleif.v2 import GleifClient
-from pygleif.v2.base import DEFAULT_RETRIES, DEFAULT_TIMEOUT_SECONDS
+from pygleif.v2.base import (
+    DEFAULT_REQUESTS_PER_MINUTE,
+    DEFAULT_RETRIES,
+    DEFAULT_TIMEOUT_SECONDS,
+)
 from pygleif.v2.error import PyGLEIFError, PyGLEIFNotFoundError, PyGLEIFRateLimitError
 
 if TYPE_CHECKING:
@@ -86,6 +90,15 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Extra attempts for transient failures (HTTP 429/5xx and "
             f"network errors) (default: {DEFAULT_RETRIES})."
+        ),
+    )
+    parser.add_argument(
+        "--rate-limit",
+        type=int,
+        default=DEFAULT_REQUESTS_PER_MINUTE,
+        help=(
+            "Max requests per minute paced proactively; 0 disables pacing "
+            f"(default: {DEFAULT_REQUESTS_PER_MINUTE})."
         ),
     )
     sub = parser.add_subparsers(dest="command", required=True)
@@ -244,7 +257,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
-        with GleifClient(timeout=args.timeout, retries=args.retries) as client:
+        with GleifClient(
+            timeout=args.timeout,
+            retries=args.retries,
+            requests_per_minute=args.rate_limit or None,
+        ) as client:
             output = _run(client, args)
     except PyGLEIFError as exc:
         sys.stderr.write(f"error: {exc}\n")

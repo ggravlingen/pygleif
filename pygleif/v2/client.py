@@ -70,6 +70,7 @@ from pygleif.v2.api import (
     VLeiIssuersResponse,
 )
 from pygleif.v2.base import (
+    DEFAULT_REQUESTS_PER_MINUTE,
     DEFAULT_RETRIES,
     DEFAULT_TIMEOUT_SECONDS,
     EXPORT_BASE_URL,
@@ -120,15 +121,23 @@ class GleifClient:
         *,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
         retries: int = DEFAULT_RETRIES,
+        requests_per_minute: int | None = DEFAULT_REQUESTS_PER_MINUTE,
     ) -> None:
         """Init the client, optionally with a custom transport.
 
         ``timeout`` (seconds) and ``retries`` (extra attempts for
         transient failures such as HTTP 429/5xx, and for network-level
-        errors) configure the default :class:`~pygleif.v2.base.Transport`;
-        they are ignored when a ``transport`` is injected.
+        errors) configure the default :class:`~pygleif.v2.base.Transport`.
+        ``requests_per_minute`` proactively paces requests to at most that
+        many per rolling 60-second window (default: GLEIF's documented
+        limit); pass ``None`` to disable pacing and rely solely on reactive
+        retries. All three are ignored when a ``transport`` is injected.
         """
-        self._transport = transport or Transport(timeout=timeout, retries=retries)
+        self._transport = transport or Transport(
+            timeout=timeout,
+            retries=retries,
+            requests_per_minute=requests_per_minute,
+        )
 
     # -- request/validation helpers ---------------------------------------
     def _fetch[ModelT: BaseModel](

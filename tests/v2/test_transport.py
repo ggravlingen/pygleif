@@ -13,10 +13,13 @@ import pytest
 
 from pygleif.v2 import base as base_module
 from pygleif.v2.base import (
+    DEFAULT_REQUESTS_PER_MINUTE,
     DEFAULT_RETRIES,
     EXPORT_BASE_URL,
     JSON_API_ACCEPT,
     MAX_RETRY_DELAY_SECONDS,
+    RATE_LIMIT_PERIOD_SECONDS,
+    RateLimiter,
     Transport,
     _retry_after_seconds,
     _retry_delay,
@@ -323,3 +326,178 @@ def test_retry_delay_falls_back_to_jittered_backoff() -> None:
         assert 0.0 <= delay <= upper_bound
     delay_no_response = _retry_delay(None, attempt=1)
     assert 0.0 <= delay_no_response <= 2.0
+
+
+# -- rate limiting -----------------------------------------------------------
+
+
+class _FakeClock:
+    """Deterministic monotonic clock + sleep for rate-limiter tests.
+
+    Rate limiting is a function of wall-clock progress, unlike the retry
+    backoff tests above (which only need ``sleep`` to be a no-op): a
+    no-op-only patch would leave the limiter's internal ``while`` loop
+    spinning forever, since ``time.monotonic()`` would never advance. This
+    fake advances its own clock whenever ``sleep``/``asleep`` is called, so
+    waits resolve deterministically and instantly.
+    """
+
+    def __init__(self) -> None:
+        self.now = 0.0
+
+    def monotonic(self) -> float:
+        return self.now
+
+    def sleep(self, seconds: float) -> None:
+        self.now += seconds
+
+    async def asleep(self, seconds: float) -> None:
+        self.now += seconds
+
+
+@pytest.fixture
+def fake_clock(monkeypatch: pytest.MonkeyPatch) -> _FakeClock:
+    """Patch ``base_module`` time so rate-limiter waits resolve instantly."""
+    clock = _FakeClock()
+    monkeypatch.setattr(base_module.time, "monotonic", clock.monotonic)
+    monkeypatch.setattr(base_module.time, "sleep", clock.sleep)
+    monkeypatch.setattr(base_module.asyncio, "sleep", clock.asleep)
+    return clock
+
+
+def test_rate_limiter_admits_up_to_max_calls_immediately(
+    fake_clock: _FakeClock,
+) -> None:
+    """Calls within the quota should return without waiting."""
+    limiter = RateLimiter(max_calls=3, period=60.0)
+    assert limiter.wait() == 0.0
+    assert limiter.wait() == 0.0
+    assert limiter.wait() == 0.0
+    assert fake_clock.now == 0.0
+
+
+def test_rate_limiter_blocks_once_quota_is_exhausted(fake_clock: _FakeClock) -> None:
+    """A call past the quota should wait for the oldest slot to age out."""
+    limiter = RateLimiter(max_calls=2, period=60.0)
+    limiter.wait()
+    limiter.wait()
+    waited = limiter.wait()
+    assert waited == 60.0
+    assert fake_clock.now == 60.0
+
+
+def test_rate_limiter_await_turn_admits_up_to_max_calls_immediately(
+    fake_clock: _FakeClock,
+) -> None:
+    """The async path should behave like the sync path within quota."""
+
+    async def run() -> list[float]:
+        limiter = RateLimiter(max_calls=3, period=60.0)
+        return [await limiter.await_turn() for _ in range(3)]
+
+    assert asyncio.run(run()) == [0.0, 0.0, 0.0]
+    assert fake_clock.now == 0.0
+
+
+def test_rate_limiter_await_turn_blocks_once_quota_is_exhausted(
+    fake_clock: _FakeClock,
+) -> None:
+    """The async path should wait like the sync path once exhausted."""
+
+    async def run() -> float:
+        limiter = RateLimiter(max_calls=2, period=60.0)
+        await limiter.await_turn()
+        await limiter.await_turn()
+        return await limiter.await_turn()
+
+    assert asyncio.run(run()) == 60.0
+
+
+def test_rate_limiter_admits_at_most_max_calls_concurrently() -> None:
+    """Concurrent callers must never over-admit past ``max_calls``.
+
+    Correctness here comes from the lock in ``RateLimiter._try_reserve``,
+    which enforces the quota atomically; this drives it with real threads
+    to confirm no race lets more than ``max_calls`` in without waiting.
+    """
+    limiter = RateLimiter(max_calls=4, period=0.2)
+    barrier = threading.Barrier(8)
+    results: list[float] = []
+    lock = threading.Lock()
+
+    def touch() -> None:
+        barrier.wait()
+        waited = limiter.wait()
+        with lock:
+            results.append(waited)
+
+    threads = [threading.Thread(target=touch) for _ in range(8)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert sum(1 for waited in results if waited == 0.0) == 4
+
+
+def test_transport_default_requests_per_minute_matches_gleif_limit() -> None:
+    """The documented default should pace to GLEIF's 60 req/min limit."""
+    assert Transport().requests_per_minute == DEFAULT_REQUESTS_PER_MINUTE == 60
+
+
+def test_transport_requests_per_minute_none_disables_pacing() -> None:
+    """Passing ``requests_per_minute=None`` should skip the limiter entirely."""
+    transport = _transport_for(
+        lambda request: httpx2.Response(200),
+        requests_per_minute=None,
+    )
+    assert transport._rate_limiter is None
+
+
+def test_transport_paces_requests_past_the_quota(fake_clock: _FakeClock) -> None:
+    """Once the quota is spent, further sync requests should be throttled."""
+    seen: list[int] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        seen.append(1)
+        return httpx2.Response(200, json={"ok": True})
+
+    transport = _transport_for(handler, requests_per_minute=2, retries=0)
+    transport.get("fields")
+    transport.get("fields")
+    transport.get("fields")
+    assert len(seen) == 3
+    assert fake_clock.now == RATE_LIMIT_PERIOD_SECONDS
+
+
+def test_transport_async_paces_requests_past_the_quota(
+    fake_clock: _FakeClock,
+) -> None:
+    """The async path should throttle like the sync path once exhausted."""
+    seen: list[int] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        seen.append(1)
+        return httpx2.Response(200, json={"ok": True})
+
+    transport = _transport_for(handler, requests_per_minute=2, retries=0)
+
+    async def run() -> None:
+        await transport.aget("fields")
+        await transport.aget("fields")
+        await transport.aget("fields")
+
+    asyncio.run(run())
+    assert len(seen) == 3
+    assert fake_clock.now == RATE_LIMIT_PERIOD_SECONDS
+
+
+def test_transport_retries_also_draw_from_the_rate_limit_quota(
+    fake_clock: _FakeClock,
+) -> None:
+    """A retried attempt is a real send too, so it must also be paced."""
+    handler = _flaky_handler(failures=1)
+    transport = _transport_for(handler, requests_per_minute=1, retries=1)
+    assert transport.get("fields") == {"ok": True}
+    assert len(handler.attempts) == 2
+    # First send exhausts the quota; the retry attempt has to wait for it.
+    assert fake_clock.now == RATE_LIMIT_PERIOD_SECONDS

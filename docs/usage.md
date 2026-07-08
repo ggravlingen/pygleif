@@ -289,6 +289,34 @@ from pygleif import GleifClient, Transport
 client = GleifClient(transport=Transport(timeout=30, retries=2))
 ```
 
+## Rate limiting
+
+By default, `GleifClient` proactively paces requests to stay under GLEIF's
+documented 60-requests-per-minute limit, so straightforward sequential usage
+rarely draws a 429 in the first place. Under the hood, `Transport` tracks a
+rolling 60-second window of past request timestamps; once
+`requests_per_minute` requests have gone out within that window, the next
+one blocks (sync) or awaits (async) until the oldest one ages out of the
+window. No request is ever rejected locally — it's paced, not dropped — and
+sync and async calls on the same client draw from one shared quota.
+
+Pacing is complementary to, not a replacement for, the retry/backoff
+described above: it prevents most self-inflicted 429s, but a shared IP,
+concurrent processes hitting the API at the same time, or a window-edge race
+can still draw one, which the `Retry-After`-aware retry loop below (see
+"Error handling") absorbs.
+
+Override the pace, or disable it and rely solely on reactive retries:
+
+```python
+client = GleifClient(requests_per_minute=30)    # a stricter self-imposed cap
+client = GleifClient(requests_per_minute=None)  # disable proactive pacing
+```
+
+`requests_per_minute` is per `GleifClient`/`Transport` instance — the quota
+isn't shared across multiple client instances or processes hitting the API
+concurrently.
+
 ## Error handling
 
 All v2 errors derive from {class}`~pygleif.v2.error.PyGLEIFError` and are

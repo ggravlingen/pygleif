@@ -124,4 +124,18 @@ def test_cli_passes_timeout_and_retries_to_client(
 
     monkeypatch.setattr(cli, "GleifClient", fake_client)
     assert cli.main(["--timeout", "5", "--retries", "1", "get", LEI]) == cli.EXIT_OK
-    assert seen == {"timeout": 5.0, "retries": 1}
+    assert seen == {"timeout": 5.0, "retries": 1, "requests_per_minute": 60}
+
+
+def test_cli_rate_limit_zero_disables_pacing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``--rate-limit 0`` should reach the client as ``requests_per_minute=None``."""
+    seen: dict[str, Any] = {}
+    transport = FakeTransport({f"lei-records/{LEI}": load_fixture(f"{LEI}_issued")})
+
+    def fake_client(**kwargs: Any) -> GleifClient:
+        seen.update(kwargs)
+        return GleifClient(transport=transport)
+
+    monkeypatch.setattr(cli, "GleifClient", fake_client)
+    assert cli.main(["--rate-limit", "0", "get", LEI]) == cli.EXIT_OK
+    assert seen["requests_per_minute"] is None
