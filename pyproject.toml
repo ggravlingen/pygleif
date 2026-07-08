@@ -39,7 +39,8 @@ dev = [
     "pytest>=8.4",
     "pytest-cov>=7.0",
     "ruff>=0.13",
-    "ty",
+    "ty==0.0.56",
+    "zizmor>=1.26.1",
 ]
 # Test-matrix groups. pygleif targets pydantic v2 (>2,<3); the frozen v1
 # models construct via the bundled ``pydantic.v1`` shim, so every group
