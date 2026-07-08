@@ -16,7 +16,8 @@ on:
     - cron: "0 6 * * 1"
 
 permissions:
-  pull-requests: read
+  # Write is required for the coverage report to be posted back to the PR.
+  pull-requests: write # zizmor: ignore[excessive-permissions]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -162,7 +163,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        persist-credentials: false
         with:
           persist-credentials: false
 
