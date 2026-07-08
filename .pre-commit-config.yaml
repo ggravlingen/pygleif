@@ -20,6 +20,10 @@ repos:
       - id: no-commit-to-branch
         args:
           - --branch=main
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.22.0
+    hooks:
+    - id: zizmor
   - repo: local
     hooks:
       - id: ty

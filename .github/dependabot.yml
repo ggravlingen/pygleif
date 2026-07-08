@@ -23,6 +23,8 @@ updates:
           - "dorny/*"
           - "orgoro/*"
           - "astral-sh/*"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "uv"
     directory: "/"
@@ -34,25 +36,35 @@ updates:
         update-types:
           - minor
           - patch
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
     
   - package-ecosystem: "uv"
     directory: "/"
     patterns: ["ruff"]
     multi-ecosystem-group: "ruff"
+    cooldown:
+      default-days: 7
   
   - package-ecosystem: "pre-commit"
     directory: "/"
     patterns: ["*/astral-sh/ruff-pre-commit"]
     multi-ecosystem-group: "ruff"
+    cooldown:
+      default-days: 7
