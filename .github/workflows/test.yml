@@ -16,7 +16,8 @@ on:
     - cron: "0 6 * * 1"
 
 permissions:
-  pull-requests: read
+  # Write is required for the coverage report to be posted back to the PR.
+  pull-requests: write # zizmor: ignore[excessive-permissions]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
