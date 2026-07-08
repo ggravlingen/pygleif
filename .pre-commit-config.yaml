@@ -21,7 +21,7 @@ repos:
         args:
           - --branch=main
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.22.0
+    rev: v1.26.1
     hooks:
     - id: zizmor
   - repo: local
