@@ -78,18 +78,10 @@ jobs:
       - name: Install requirements
         run: uv sync --all-groups
 
-      - name: Run ruff
-        run: uv run pre-commit run --hook-stage manual ruff --all-files --show-diff-on-failure
+      - name: Run pre-commit
+        run: uv run pre-commit run --all-files --show-diff-on-failure
         env:
-          RUFF_OUTPUT_FORMAT: github
-
-      - name: Run ruff-format
-        run: uv run pre-commit run --hook-stage manual ruff-format --all-files --show-diff-on-failure
-        env:
-          RUFF_OUTPUT_FORMAT: github
-
-      - name: Run ty
-        run: uv run pre-commit run --hook-stage manual ty --all-files --show-diff-on-failure
+          SKIP: no-commit-to-branch
 
   pytest:
     name: Run test suite
