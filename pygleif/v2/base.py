@@ -13,6 +13,7 @@ transient failures such as the GLEIF rate limit.
 from __future__ import annotations
 
 import asyncio
+from collections import deque
 import datetime as dt
 from email.utils import parsedate_to_datetime
 from enum import IntEnum
@@ -46,6 +47,12 @@ MAX_RETRY_DELAY_SECONDS = 30.0
 #: Extra attempts for transient failures by default; GLEIF's 60 req/min
 #: limit makes 429 a routine event rather than an anomaly.
 DEFAULT_RETRIES = 3
+
+RATE_LIMIT_PERIOD_SECONDS = 60.0
+#: Proactive pacing matching GLEIF's documented 60 req/min limit; pass
+#: ``requests_per_minute=None`` to disable and rely solely on reactive
+#: retries.
+DEFAULT_REQUESTS_PER_MINUTE = 60
 
 
 class HttpErrorCodes(IntEnum):
@@ -93,6 +100,62 @@ def _retry_delay(response: httpx2.Response | None, attempt: int) -> float:
     if delay is None:
         delay = random.uniform(0, float(2**attempt))  # noqa: S311 - jitter, not crypto
     return min(delay, MAX_RETRY_DELAY_SECONDS)
+
+
+class RateLimiter:
+    """Sliding-window limiter admitting at most `max_calls` per `period`.
+
+    Backed by a deque of `time.monotonic()` timestamps guarded by a
+    `threading.Lock`, shared by both the sync and async request paths
+    (`wait` and `await_turn` respectively) so pacing draws from a single
+    quota regardless of which path a caller uses. The lock is held only for
+    the bookkeeping that decides whether to reserve a slot or sleep, never
+    across the sleep itself, so concurrent callers don't serialize behind
+    each other's wait.
+    """
+
+    def __init__(
+        self,
+        max_calls: int,
+        period: float = RATE_LIMIT_PERIOD_SECONDS,
+    ) -> None:
+        """Admit at most `max_calls` calls per `period` seconds."""
+        self._max_calls = max_calls
+        self._period = period
+        self._lock = threading.Lock()
+        self._call_times: deque[float] = deque()
+
+    def _try_reserve(self) -> float:
+        """Reserve a slot if one is free; else return seconds until one is."""
+        with self._lock:
+            now = time.monotonic()
+            cutoff = now - self._period
+            while self._call_times and self._call_times[0] <= cutoff:
+                self._call_times.popleft()
+            if len(self._call_times) < self._max_calls:
+                self._call_times.append(now)
+                return 0.0
+            return self._call_times[0] - cutoff
+
+    def wait(self) -> float:
+        """Block until a slot is free, reserve it, and return the wait time."""
+        waited = 0.0
+        while True:
+            sleep_for = self._try_reserve()
+            if sleep_for <= 0.0:
+                return waited
+            waited += sleep_for
+            time.sleep(sleep_for)
+
+    async def await_turn(self) -> float:
+        """Async counterpart of :meth:`wait`."""
+        waited = 0.0
+        while True:
+            sleep_for = self._try_reserve()
+            if sleep_for <= 0.0:
+                return waited
+            waited += sleep_for
+            await asyncio.sleep(sleep_for)
 
 
 @runtime_checkable
@@ -147,12 +210,13 @@ class TransportLike(Protocol):
 class Transport:
     """Perform GET requests against the GLEIF JSON API, sync or async."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913 - one arg per independent client setting
         self,
         base_url: str = API_BASE_URL,
         *,
         timeout: float = DEFAULT_TIMEOUT_SECONDS,
         retries: int = DEFAULT_RETRIES,
+        requests_per_minute: int | None = DEFAULT_REQUESTS_PER_MINUTE,
         httpx_transport: httpx2.BaseTransport | None = None,
         httpx_async_transport: httpx2.AsyncBaseTransport | None = None,
     ) -> None:
@@ -161,13 +225,21 @@ class Transport:
         ``retries`` is the number of extra attempts for transient failures
         (:data:`RETRY_STATUSES` and network-level errors), honoring
         ``Retry-After`` with the delay capped at
-        :data:`MAX_RETRY_DELAY_SECONDS`; pass ``0`` to disable retries. The
+        :data:`MAX_RETRY_DELAY_SECONDS`; pass ``0`` to disable retries.
+        ``requests_per_minute`` proactively paces every attempt (including
+        retries) to at most that many requests per rolling 60-second window,
+        so well-behaved usage rarely draws a 429 in the first place; pass
+        ``None`` to disable pacing and rely solely on reactive retries. The
         ``httpx_*transport`` hooks exist mainly so tests can inject an
         ``httpx2.MockTransport``.
         """
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.retries = retries
+        self.requests_per_minute = requests_per_minute
+        self._rate_limiter = (
+            RateLimiter(requests_per_minute) if requests_per_minute else None
+        )
         self._httpx_transport = httpx_transport
         self._httpx_async_transport = httpx_async_transport
         self._client: httpx2.Client | None = None
@@ -275,6 +347,38 @@ class Transport:
             body=body,
         )
 
+    def _paced_get(
+        self,
+        url: str,
+        headers: dict[str, str] | None,
+    ) -> httpx2.Response:
+        """GET, first pacing to ``self._rate_limiter``'s quota if set."""
+        if self._rate_limiter is not None:
+            waited = self._rate_limiter.wait()
+            if waited > 0:
+                logger.warning(
+                    "pygleif: throttled %s for %.2fs to respect rate limit",
+                    url,
+                    waited,
+                )
+        return self.client.get(url, headers=headers)
+
+    async def _apaced_get(
+        self,
+        url: str,
+        headers: dict[str, str] | None,
+    ) -> httpx2.Response:
+        """Async counterpart of :meth:`_paced_get`."""
+        if self._rate_limiter is not None:
+            waited = await self._rate_limiter.await_turn()
+            if waited > 0:
+                logger.warning(
+                    "pygleif: throttled %s for %.2fs to respect rate limit",
+                    url,
+                    waited,
+                )
+        return await self.async_client.get(url, headers=headers)
+
     def _send_with_retry(
         self,
         url: str,
@@ -285,10 +389,12 @@ class Transport:
         Retries both transient HTTP statuses (:data:`RETRY_STATUSES`) and
         network-level failures (``httpx2.TransportError``, e.g. connection
         resets or timeouts) so a momentary blip doesn't fail the request.
+        Every attempt, including retries, is paced through
+        :meth:`_paced_get` so retries draw from the same rate-limit quota.
         """
         for attempt in range(self.retries):
             try:
-                response = self.client.get(url, headers=headers)
+                response = self._paced_get(url, headers)
             except httpx2.TransportError as exc:
                 delay = _retry_delay(None, attempt)
                 logger.warning(
@@ -314,7 +420,7 @@ class Transport:
                 delay,
             )
             time.sleep(delay)
-        return self.client.get(url, headers=headers)
+        return self._paced_get(url, headers)
 
     async def _asend_with_retry(
         self,
@@ -324,7 +430,7 @@ class Transport:
         """Async counterpart of :meth:`_send_with_retry`."""
         for attempt in range(self.retries):
             try:
-                response = await self.async_client.get(url, headers=headers)
+                response = await self._apaced_get(url, headers)
             except httpx2.TransportError as exc:
                 delay = _retry_delay(None, attempt)
                 logger.warning(
@@ -350,7 +456,7 @@ class Transport:
                 delay,
             )
             await asyncio.sleep(delay)
-        return await self.async_client.get(url, headers=headers)
+        return await self._apaced_get(url, headers)
 
     def _request(
         self,
