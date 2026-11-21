@@ -52,6 +52,8 @@ class BaseSchema(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
+        # Build each model's validator on first use, not at import.
+        defer_build=True,
     )
 
 

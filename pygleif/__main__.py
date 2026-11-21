@@ -21,6 +21,7 @@ Examples:
 from __future__ import annotations
 
 import argparse
+from importlib import resources
 import json
 import sys
 from typing import TYPE_CHECKING
@@ -161,6 +162,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub.add_parser("fields", help="List technical metadata for API data fields.")
+    sub.add_parser(
+        "guide",
+        help="Print the best-practices guide (for people and AI assistants).",
+    )
 
     return parser
 
@@ -238,6 +243,11 @@ _DISPATCH: dict[str, Callable[[GleifClient, argparse.Namespace], str]] = {
 }
 
 
+def _guide_text() -> str:
+    """Return the best-practices guide bundled with the package."""
+    return (resources.files("pygleif") / "AGENTS.md").read_text(encoding="utf-8")
+
+
 def _run(client: GleifClient, args: argparse.Namespace) -> str:
     """Dispatch a parsed command to the v2 client and return output text."""
     return _DISPATCH[args.command](client, args)
@@ -256,6 +266,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run the CLI. Returns a process exit code."""
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.command == "guide":
+        sys.stdout.write(_guide_text())
+        return EXIT_OK
     try:
         with GleifClient(
             timeout=args.timeout,

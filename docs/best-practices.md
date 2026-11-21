@@ -1,0 +1,2 @@
+```{include} ../pygleif/AGENTS.md
+```

@@ -11,6 +11,12 @@ Full documentation, including the complete API reference, is available at
 > `pygleif.v1` (`PyGleif`, `Search`) is deprecated. New code should use
 > `pygleif.v2` (`GleifClient`), shown below.
 
+> [!TIP]
+> Upgrading, or using an AI coding assistant? The current best-practices guide
+> ships inside the package: run `pygleif guide` (or open `pygleif/AGENTS.md` in
+> your environment). It is also published at
+> [pygleif.readthedocs.io/en/latest/best-practices.html](https://pygleif.readthedocs.io/en/latest/best-practices.html).
+
 #### Installing the library
 `pip install pygleif`
 

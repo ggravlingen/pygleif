@@ -28,5 +28,6 @@ pip install git+https://github.com/ggravlingen/pygleif.git@main
 :hidden:
 
 usage
+best-practices
 api/index
 ```

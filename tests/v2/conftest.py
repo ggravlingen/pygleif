@@ -46,6 +46,22 @@ class FakeTransport:
         """Async counterpart of :meth:`get`, backed by the same canned data."""
         return self.get(path, params)
 
+    def get_json_bytes(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+    ) -> bytes:
+        """Serialize the canned payload, mimicking the undecoded wire body."""
+        return json.dumps(self.get(path, params)).encode()
+
+    async def aget_json_bytes(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+    ) -> bytes:
+        """Async counterpart of :meth:`get_json_bytes`."""
+        return self.get_json_bytes(path, params)
+
     def get_raw(
         self,
         path: str,

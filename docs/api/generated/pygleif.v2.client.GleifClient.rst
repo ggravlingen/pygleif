@@ -43,9 +43,12 @@
       ~GleifClient._fetch
       ~GleifClient._field_modification_params
       ~GleifClient._filter_params
+      ~GleifClient._lei_batches
       ~GleifClient._page_params
       ~GleifClient._search_params
+      ~GleifClient._segment
       ~GleifClient._to_record
+      ~GleifClient._validate
       ~GleifClient.aassociated_entity
       ~GleifClient.aautocompletions
       ~GleifClient.aby_bic
@@ -69,6 +72,7 @@
       ~GleifClient.aget_lei
       ~GleifClient.aget_lei_issuer
       ~GleifClient.aget_lei_record
+      ~GleifClient.aget_lei_records
       ~GleifClient.aget_official_organizational_role
       ~GleifClient.aget_region
       ~GleifClient.aget_registration_agent
@@ -118,6 +122,7 @@
       ~GleifClient.get_lei
       ~GleifClient.get_lei_issuer
       ~GleifClient.get_lei_record
+      ~GleifClient.get_lei_records
       ~GleifClient.get_official_organizational_role
       ~GleifClient.get_region
       ~GleifClient.get_registration_agent

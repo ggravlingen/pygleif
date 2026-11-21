@@ -73,7 +73,7 @@ version = {file = "pygleif/VERSION"}
 exclude = ["tests", "tests*"]
 
 [tool.setuptools.package-data]
-"pygleif" = ["py.typed"]
+"pygleif" = ["py.typed", "AGENTS.md"]
 
 [tool.pytest.ini_options]
 testpaths = [

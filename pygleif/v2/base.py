@@ -17,6 +17,7 @@ from collections import deque
 import datetime as dt
 from email.utils import parsedate_to_datetime
 from enum import IntEnum
+import functools
 from importlib import metadata
 import logging
 import random
@@ -62,8 +63,9 @@ class HttpErrorCodes(IntEnum):
     TOO_MANY_REQUESTS = 429
 
 
+@functools.cache
 def _user_agent() -> str:
-    """Return the ``pygleif/{version}`` user agent string."""
+    """Return the ``pygleif/{version}`` user agent string (cached)."""
     try:
         return f"pygleif/{metadata.version('pygleif')}"
     except metadata.PackageNotFoundError:
@@ -530,6 +532,27 @@ class Transport:
         """Issue an async GET request and return the decoded JSON body."""
         response = await self._arequest(path, params, accept=JSON_API_ACCEPT)
         return self._decode_json(response)
+
+    def get_json_bytes(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+    ) -> bytes:
+        """Issue a GET request and return the undecoded JSON body.
+
+        Lets the caller parse and validate in a single pass with
+        ``model_validate_json`` instead of decoding to Python objects first.
+        """
+        return self._request(path, params, accept=JSON_API_ACCEPT).content
+
+    async def aget_json_bytes(
+        self,
+        path: str,
+        params: dict[str, Any] | None = None,
+    ) -> bytes:
+        """Async counterpart of :meth:`get_json_bytes`."""
+        response = await self._arequest(path, params, accept=JSON_API_ACCEPT)
+        return response.content
 
     def get_raw(
         self,

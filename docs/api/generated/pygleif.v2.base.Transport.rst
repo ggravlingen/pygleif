@@ -39,17 +39,22 @@
       ~Transport.__sizeof__
       ~Transport.__str__
       ~Transport.__subclasshook__
+      ~Transport._apaced_get
       ~Transport._arequest
       ~Transport._asend_with_retry
       ~Transport._build_url
+      ~Transport._decode_json
       ~Transport._map_status_error
+      ~Transport._paced_get
       ~Transport._request
       ~Transport._send_with_retry
       ~Transport.aclose
       ~Transport.aget
+      ~Transport.aget_json_bytes
       ~Transport.aget_raw
       ~Transport.close
       ~Transport.get
+      ~Transport.get_json_bytes
       ~Transport.get_raw
    
    
