@@ -139,3 +139,18 @@ def test_cli_rate_limit_zero_disables_pacing(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(cli, "GleifClient", fake_client)
     assert cli.main(["--rate-limit", "0", "get", LEI]) == cli.EXIT_OK
     assert seen["requests_per_minute"] is None
+
+
+def test_guide_prints_bundled_guide(capsys: pytest.CaptureFixture[str]) -> None:
+    """``pygleif guide`` prints the packaged guide without any network."""
+    assert cli.main(["guide"]) == cli.EXIT_OK
+    out = capsys.readouterr().out
+    assert out.startswith("# Best practices and upgrade guide")
+    assert "get_lei_records" in out
+
+
+def test_guide_ships_as_package_data() -> None:
+    """The guide must be a resource of the installed ``pygleif`` package."""
+    from importlib import resources  # noqa: PLC0415
+
+    assert (resources.files("pygleif") / "AGENTS.md").is_file()

@@ -32,6 +32,8 @@ and ``asearch``) backed by the same :class:`~pygleif.v2.base.Transport`.
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, Self
 from urllib import parse
@@ -80,7 +82,7 @@ from pygleif.v2.error import PyGLEIFResponseError
 from pygleif.v2.pydantic_shim import ValidationError
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator, Iterator
+    from collections.abc import AsyncIterator, Awaitable, Iterable, Iterator
 
     from pygleif.compat.interfaces import RecordLike
     from pygleif.v2.api import LeiRecord
@@ -107,6 +109,11 @@ class ExportFormat(StrEnum):
 
 #: The API rejects ``page[size]`` above this value.
 MAX_PAGE_SIZE = 200
+
+#: LEIs per request in :meth:`GleifClient.get_lei_records`. Kept below
+#: ``MAX_PAGE_SIZE`` so the comma-joined ``filter[lei]`` query string stays
+#: well inside common URL length limits.
+LEI_BATCH_SIZE = 100
 
 
 class GleifClient:
@@ -146,7 +153,15 @@ class GleifClient:
         path: str,
         params: dict[str, Any] | None = None,
     ) -> ModelT:
-        """Fetch ``path`` and validate the payload into ``model``."""
+        """Fetch ``path`` and validate the payload into ``model``.
+
+        Uses the transport's undecoded-bytes path when available so pydantic
+        parses and validates in one pass; transports without it (e.g. simple
+        test fakes) fall back to ``get`` plus dict validation.
+        """
+        get_bytes = getattr(self._transport, "get_json_bytes", None)
+        if get_bytes is not None:
+            return self._validate(model, path, get_bytes(path, params))
         return self._validate(model, path, self._transport.get(path, params))
 
     async def _afetch[ModelT: BaseModel](
@@ -156,6 +171,9 @@ class GleifClient:
         params: dict[str, Any] | None = None,
     ) -> ModelT:
         """Async counterpart of :meth:`_fetch`."""
+        aget_bytes = getattr(self._transport, "aget_json_bytes", None)
+        if aget_bytes is not None:
+            return self._validate(model, path, await aget_bytes(path, params))
         payload = await self._transport.aget(path, params)
         return self._validate(model, path, payload)
 
@@ -163,15 +181,20 @@ class GleifClient:
     def _validate[ModelT: BaseModel](
         model: type[ModelT],
         path: str,
-        payload: dict[str, Any],
+        payload: dict[str, Any] | bytes,
     ) -> ModelT:
         """Validate ``payload`` into ``model``, wrapping schema mismatches.
+
+        ``payload`` is either a decoded dict or the raw JSON body; invalid
+        JSON surfaces as a ``ValidationError`` and is wrapped the same way.
 
         An upstream GLEIF schema change would otherwise surface as a bare
         ``pydantic.ValidationError`` that callers catching
         :class:`~pygleif.v2.error.PyGLEIFError` would not expect.
         """
         try:
+            if isinstance(payload, bytes):
+                return model.model_validate_json(payload)
             return model.model_validate(payload)
         except ValidationError as exc:
             msg = f"Response for {path!r} did not match the expected schema"
@@ -287,6 +310,47 @@ class GleifClient:
         """Return a normalized :class:`RecordLike` for a single LEI (async)."""
         return self._to_record(await self.aget_lei_record(lei))
 
+    @staticmethod
+    def _lei_batches(leis: Iterable[str]) -> list[list[str]]:
+        """De-duplicate ``leis`` (keeping order) and chunk for batch lookup."""
+        unique = list(dict.fromkeys(lei.strip() for lei in leis if lei.strip()))
+        return [
+            unique[i : i + LEI_BATCH_SIZE]
+            for i in range(0, len(unique), LEI_BATCH_SIZE)
+        ]
+
+    def get_lei_records(self, leis: Iterable[str]) -> list[LeiRecord]:
+        """Return the LEI records for many LEIs using as few requests as possible.
+
+        Uses the ``filter[lei]`` any-of operator, so N LEIs cost
+        ``ceil(N / LEI_BATCH_SIZE)`` requests instead of N. LEIs that do not
+        exist are simply absent from the result, and the order of the
+        returned records is the API's, not the input order. Duplicates and
+        blank entries are ignored.
+        """
+        records: list[LeiRecord] = []
+        for batch in self._lei_batches(leis):
+            response = self.search(
+                filters={"lei": ",".join(batch)},
+                page_size=len(batch),
+            )
+            records.extend(response.data)
+        return records
+
+    async def aget_lei_records(self, leis: Iterable[str]) -> list[LeiRecord]:
+        """Return the LEI records for many LEIs (async).
+
+        Async counterpart of :meth:`get_lei_records`.
+        """
+        records: list[LeiRecord] = []
+        for batch in self._lei_batches(leis):
+            response = await self.asearch(
+                filters={"lei": ",".join(batch)},
+                page_size=len(batch),
+            )
+            records.extend(response.data)
+        return records
+
     # -- search ---------------------------------------------------------
     def search(
         self,
@@ -346,7 +410,7 @@ class GleifClient:
         *,
         filters: dict[str, str] | None = None,
         sort: str | None = None,
-        page_size: int = 100,
+        page_size: int = MAX_PAGE_SIZE,
         start_page: int = 1,
         max_records: int | None = None,
     ) -> Iterator[LeiRecord]:
@@ -382,32 +446,60 @@ class GleifClient:
         *,
         filters: dict[str, str] | None = None,
         sort: str | None = None,
-        page_size: int = 100,
+        page_size: int = MAX_PAGE_SIZE,
         start_page: int = 1,
         max_records: int | None = None,
     ) -> AsyncIterator[LeiRecord]:
         """Yield LEI records across all result pages of a search (async).
 
-        Async counterpart of :meth:`iter_search`.
+        Async counterpart of :meth:`iter_search`. The next page is requested
+        in the background while the caller consumes the current one, hiding
+        network latency; requests still draw from the shared rate-limit
+        quota. A prefetch still in flight when iteration stops early is
+        cancelled.
         """
         page = start_page
         yielded = 0
-        while True:
-            response = await self.asearch(
+        pending: asyncio.Task[SearchResponse] | None = None
+
+        def fetch(number: int) -> Awaitable[SearchResponse]:
+            return self.asearch(
                 filters=filters,
                 sort=sort,
-                page_number=page,
+                page_number=number,
                 page_size=page_size,
             )
-            for record in response.data:
-                yield record
-                yielded += 1
-                if max_records is not None and yielded >= max_records:
+
+        try:
+            response = await fetch(page)
+            while True:
+                pagination = response.meta.pagination
+                has_next = (
+                    bool(response.data)
+                    and pagination is not None
+                    and page < pagination.last_page
+                    and (
+                        max_records is None
+                        or yielded + len(response.data) < max_records
+                    )
+                )
+                if has_next:
+                    pending = asyncio.ensure_future(fetch(page + 1))
+                for record in response.data:
+                    yield record
+                    yielded += 1
+                    if max_records is not None and yielded >= max_records:
+                        return
+                if pending is None:
                     return
-            pagination = response.meta.pagination
-            if not response.data or pagination is None or page >= pagination.last_page:
-                return
-            page += 1
+                response = await pending
+                pending = None
+                page += 1
+        finally:
+            if pending is not None:
+                pending.cancel()
+                with contextlib.suppress(asyncio.CancelledError, Exception):
+                    await pending
 
     def search_fulltext(
         self,

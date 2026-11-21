@@ -33,6 +33,17 @@ record = client.get_lei("549300MLUDYVRQOOXS22")
 print(record.lei, record.legal_name, record.country)
 ```
 
+### Fetching many LEIs at once
+
+`get_lei_records` batches up to 100 LEIs per request, so looking up N LEIs
+costs `ceil(N / 100)` requests instead of N. Results are in API order; index
+them by `record.id`. LEIs that do not exist are omitted.
+
+```python
+records = client.get_lei_records(["9845001B2AD43E664E58", "5299000J2N45DDNE4Y28"])
+by_lei = {record.id: record for record in records}
+```
+
 ## Searching
 
 ```python
@@ -76,7 +87,7 @@ for record in client.iter_search(
     print(record.attributes.lei, record.attributes.entity.legal_name.name)
 ```
 
-The API caps `page_size` at 200 (the iterator defaults to 100) and the
+The API caps `page_size` at 200 (the iterator defaults to 200) and the
 service is rate limited to 60 requests/minute, so prefer large page sizes
 and `max_records` when you only need the first part of a big result set.
 
